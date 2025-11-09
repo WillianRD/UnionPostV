@@ -20,15 +20,15 @@ def checkCategory(marketplace):
     else:
         return 'O produto deve estar na categoria', False
     
-def checkProdut(produto):
-    if produto == 'Moldura Interativa': return True
-    if produto == 'Lousa Interativa': return True
+# def checkProdut(produto):
+  #  if produto == 'Moldura Interativa': return True
+   # if produto == 'Lousa Interativa': return True
 
-    else:
-        return 'Produto não disponivel', False
+    #else:
+     #   return 'Produto não disponivel', False
         
-def checkFornecedor(loja):
-    if loja == 'Brasil Touch Audiovisuais': return True
-    if loja == 'Show de Imagem Audiovisuais': return True
+#def checkFornecedor(loja):
+ #   if loja == 'Brasil Touch Audiovisuais': return True
+  #  if loja == 'Show de Imagem Audiovisuais': return True
 
-    return False
+   # return False

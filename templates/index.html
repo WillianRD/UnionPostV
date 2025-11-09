@@ -4,183 +4,248 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cadastro de Produto</title>
+  <title>UnionPost — Enviar Dados</title>
 
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+    crossorigin="anonymous">
+  <!-- Bootstrap Icons (para ícones nos campos) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Fonte opcional -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
+  <link rel="shortcut icon" href="../static/Logo/logo.ico" type="imgem/x-icon">
   <style>
-    body {
-      background-color: #ffffff;
-      font-family: 'Noto Sans', sans-serif;
-      background-position: center;
+    :root {
+      --brand: #0b5fff;
+      /* cor principal (ajuste conforme sua marca) */
+      --brand-600: #0a4bd1;
+      --ok: #22c55e;
+      --bg: #f7f8fc;
+      --radius: 16px;
+      --shadow: 0 20px 60px rgba(2, 6, 23, .08);
     }
 
-    .container {
-      max-width: 600px;
-      background: rgb(255, 251, 251);
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(254, 253, 253, 0.1);
-      margin-top: 50px;
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      font-family: 'Noto Sans', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif;
+      background:
+        radial-gradient(40rem 28rem at -10% -10%, #eaf1ff 0, transparent 60%),
+        radial-gradient(40rem 28rem at 110% 10%, #eaf1ff 0, transparent 60%),
+        var(--bg);
+    }
+
+    .shell {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card-lg {
+      width: 100%;
+      max-width: 640px;
+      border: 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      background: #fff;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .brand .logo {
+      width: 76px;
+      height: 76px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(140deg, var(--brand), #84a9ff);
+      color: #fff;
+      box-shadow: 0 15px 40px rgba(11, 95, 255, .25);
+    }
+
+    .brand h1 {
+      font-size: clamp(1.35rem, 3vw, 1.75rem);
+      margin: 0;
+    }
+
+    .brand .sub {
+      color: #6c757d;
+      font-size: .95rem;
+      text-align: center;
     }
 
     .form-label {
-      font-weight: bold;
+      font-weight: 700
+    }
+
+    .input-icon {
+      position: relative;
+    }
+
+    .input-icon .bi {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6c757d;
+    }
+
+    .input-icon .form-control,
+    .input-icon .form-select {
+      padding-left: 2.2rem;
+      background-color: #f7f9ff;
+      border: 1px solid #e3e9ff;
+    }
+
+    .input-icon .form-control:focus,
+    .input-icon .form-select:focus {
+      box-shadow: 0 0 0 .25rem rgba(11, 95, 255, .15);
+      border-color: #bcd0ff;
+      background-color: #fff;
     }
 
     .btn-primary {
-      width: 100%;
-      background-color: #28a745;
-      border: none;
-    }
-
-    .btn-btn-primary {
-      width: 100%;
-      background-color: rgb(0, 153, 255);
+      background-color: var(--ok);
+      border-color: var(--ok);
+      font-weight: 700;
     }
 
     .btn-primary:hover {
-      background-color: #218838;
+      background-color: #1cb152;
+      border-color: #1cb152
     }
-  </style>      
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #e9eefc, transparent);
+      margin: 0.75rem 0 1.25rem;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="container">
-    <h2 class="text-center mb-4">UnionPost</h2>
-    {% if mensagem %}
-    <div class="alert alert-success" role="alert">
-      {{ mensagem }}
-    </div>
-    {% endif %}
-    <form action="/" method="POST">
-
-      <div class="mb-3">
-        <label class="form-label">Nome</label>
-        <input name="name" type="text" class="form-control" placeholder="Seu nome" required>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Marketplace</label>
-        <select name="categoria" class="form-select" required>
-          <option value="" selected disabled>Selecione uma opção</option>
-          <option value="Mercado Livre" required">Mercado Livre</option> 
-          <option value="Amazon">Amazon</option>
-          <option value="Olist">Olist</option>
-          <option value="Magalu">Magalu</option>
-          <option value="Loja">Loja Virtual</option>
-
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Produto</label>
-        <select name="produto" class="form-select" required>
-          <option value="" selected disabled>Selecione um produto</option>
-          <option value="Moldura Interativa">Moldura Interativa</option>
-          <option value="Lousa Interatica">Lousa Interativa</option>
-        </select>
-        <!--<textarea name="descricao" class="form-control" rows="3" placeholder="Descrição do produto"></textarea> -->
-      </div>
-      
-      <div class="mb-3">
-        <label class="form-label">N° Pedido</label>
-        <input name="idpedido" type="text" class="form-control" placeholder="Infome o N° do seu Pedido" required>
-      </div>
-
-<div class="mb-3">
-  <label class="form-label">Telefone</label>
-  <input 
-    name="telefone" 
-    type="tel" 
-    class="form-control" 
-    placeholder="(00) 00000-0000" 
-    required
-    id="telefone"
-    maxlength="15"
-  >
+  <div class="shell">
+    <div class="card card-lg p-4 p-md-5">
+      <!-- Cabeçalho com logo -->
+      <div class="brand mb-3">
+        <!-- TROQUE O SRC PELO SEU LOGO (ou deixe o ícone) -->
+<div class="brand mb-3 text-center">
+  <!-- Nova logo com link -->
+  <!-- <a href="https://www.unionboard.com.br" target="_blank" rel="noopener noreferrer"> -->
+    <img src="{{ url_for('static', filename='Logo/UnionPost-removebg-preview.png') }}"
+         alt="Logo da Empresa"
+         style="width: 180px; height: auto; margin-bottom: 10px;">
+  </a>
 </div>
 
-<script>
-  const telefoneInput = document.getElementById('telefone');
-
-  telefoneInput.addEventListener('input', (e) => {
-    let value = e.target.value;
-    
-    // remove tudo que não é número
-    value = value.replace(/\D/g, '');
-
-    // limita a 11 dígitos
-    if (value.length > 11) value = value.slice(0, 11);
-
-    // aplica a máscara conforme o tamanho
-    if (value.length > 10) {
-      value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
-    } else if (value.length > 6) {
-      value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-    } else if (value.length > 2) {
-      value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
-    } else {
-      value = value.replace(/^(\d*)/, '($1');
-    }
-
-    e.target.value = value;
-  });
-
-  // impede envio se o número estiver incompleto
-  document.querySelector('form')?.addEventListener('submit', (e) => {
-    const num = telefoneInput.value.replace(/\D/g, '');
-    if (num.length < 10) {
-      alert('Por favor, digite um telefone válido com DDD.');
-      e.preventDefault();
-    }
-  });
-</script>
-
-
-
-
-      <!--<div class="mb-3">
-          <label class="form-label">Quantidade no Estoque</label>
-          <input name="estoque" type="number" class="form-control" placeholder="Quantidade disponível">
-        </div> -->
-
-      <div class="mb-3">
-        <label class="form-label">Loja</label>
-        <select name="loja" class="form-select" required>
-          <option value="" selected disabled>Selecione a Loja</option>
-          <option value="Brasil Touch Audiovisuais">Brasil Touch Audiovisuais</option>
-          <option value="Show de Imagem Audiovisuais">Show de Imagem Audiovisuais</option>
-        </select>
+        <h1 class="text-center">UnionPost</h1>
+        <div class="sub">Envie os dados do seu pedido para gerarmos as instruções/etiqueta.</div>
       </div>
 
-      <!-- <div class="mb-3">
-          <label class="form-label">Data de Fabricação</label>
-          <input name="fabricacao" type="date" class="form-control">
-        </div> 
+      {% if mensagem %}
+      <div class="alert alert-success" role="alert">
+        {{ mensagem }}
+      </div>
+      {% endif %}
 
-        <!-- <div class="mb-3">
-          <label class="form-label">Data de Vencimento</label>
-          <input name="vencimento" type="date" class="form-control">
-        </div> 
+      <div class="divider"></div>
 
-        <!-- <div class="mb-3">
-          <label class="form-label">Características</label>
-          <input name="caracteristicas" type="text" class="form-control" placeholder="Características do produto">
+      <form action="/" method="POST" novalidate>
+        <div class="mb-3">
+          <label for="nome" class="form-label">Nome</label>
+          <div class="input-icon">
+            <i class="bi bi-person"></i>
+            <input id="nome" name="name" type="text" class="form-control" placeholder="Seu nome" required>
+          </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Imagem (URL)</label>
-          <input name="urllink" type="url" class="form-control" placeholder="Link da imagem">
-        </div> -->
+          <label for="marketplace" class="form-label">Marketplace</label>
+          <div class="input-icon">
+            <i class="bi bi-shop"></i>
+            <select id="marketplace" name="categoria" class="form-select" required>
+              <option value="" selected disabled>Selecione uma opção</option>
+              <option value="Mercado Livre">Mercado Livre</option>
+              <option value="Amazon">Amazon</option>
+              <option value="Olist">Olist</option>
+              <option value="Magalu">Magalu</option>
+              <option value="Loja">Loja Virtual</option>
+            </select>
+          </div>
+        </div>
 
-      <button type="submit" class="btn btn-primary">Enviar Dados</button>
+        <div class="mb-3">
+          <label for="pedido" class="form-label">N° do Pedido</label>
+          <div class="input-icon">
+            <i class="bi bi-hash"></i>
+            <input id="pedido" name="idpedido" type="text" class="form-control" placeholder="Informe o N° do seu Pedido"
+              required>
+          </div>
+          <div class="form-text">Use o número exato exibido no marketplace.</div>
+        </div>
 
-    </form>
+        <div class="mb-3">
+          <label for="telefone" class="form-label">Telefone (WhatsApp)</label>
+          <div class="input-icon">
+            <i class="bi bi-telephone"></i>
+            <input id="telefone" name="telefone" type="tel" class="form-control" placeholder="(00) 00000-0000"
+              maxlength="15" required>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary btn-lg">Enviar Dados</button>
+        </div>
+      </form>
+
+      <p class="text-center text-muted mt-3 mb-0" style="font-size:.9rem;">
+        Seus dados são usados apenas para emissão das instruções de envio.
+      </p>
+    </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JS Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    crossorigin="anonymous"></script>
+
+  <!-- Máscara e validação de telefone (seu script original, com pequeno ajuste de robustez) -->
+  <script>
+    const telefoneInput = document.getElementById('telefone');
+
+    telefoneInput.addEventListener('input', (e) => {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+
+      if (value.length > 10) {
+        value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+      } else if (value.length > 6) {
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+      } else if (value.length > 2) {
+        value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+      } else if (value.length > 0) {
+        value = value.replace(/^(\d{0,2})/, '($1');
+      }
+      e.target.value = value;
+    });
+
+    document.querySelector('form')?.addEventListener('submit', (e) => {
+      const num = telefoneInput.value.replace(/\D/g, '');
+      if (num.length < 10) {
+        alert('Por favor, digite um telefone válido com DDD.');
+        e.preventDefault();
+      }
+    });
+  </script>
 </body>
 
 </html>

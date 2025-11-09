@@ -14,9 +14,7 @@ def read_data():
     listaDeProduto = [{
         "nome": linha[1], 
         "marketplce": linha[2] ,
-        "produto": linha[3],
-        "npedido": linha[4],
-        "telefone": linha[5],
-        "loja": linha[6]
+        "npedido": linha[3],
+        "telefone": linha[4]
         } for linha in dados]
     return listaDeProduto

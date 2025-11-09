@@ -1,3 +1,4 @@
+
 import sqlite3
 
 def create_table():
@@ -8,10 +9,8 @@ def create_table():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         marketplace TEXT NOT NULL,
-        produto TEXT NOT NULL,
         npedido TEXT NOT NULL,
-        telefone TEXT NOT NULL,
-        loja TEXT NOT NULL
+        telefone TEXT NOT NULL
     )
     """)
     con.commit()

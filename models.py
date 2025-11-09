@@ -14,25 +14,23 @@ def createTable():
             id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             name TEXT NOT NULL,
             marketplace TEXT NOT NULL,
-            produto TEXT NOT NULL,
             idpedido TEXT NOT NULL,
-            telefone TEXT NOT NULL,
-            loja TEXT NOT NULL
+            telefone TEXT NOT NULL
         )
     ''')
     con.commit()
     cursor.close()
     con.close()
 
-def updateDados(name, marketplace, produto, npedido, telefone, loja):
+def updateDados(name, marketplace, npedido, telefone):
     con = sqlite3.connect('banco.db')
     cursor = con.cursor()
     
     sql = '''INSERT INTO clientes
-        (name, marketplace, produto, npedido, telefone, loja)
+        (name, marketplace, npedido, telefone)
         VALUES (?,?,?,?,?,?)'''
     
-    cursor.execute(sql, (name, marketplace, produto, npedido, telefone, loja))
+    cursor.execute(sql, (name, marketplace, npedido, telefone))
     con.commit()
     cursor.close()
     con.close()
@@ -49,10 +47,8 @@ def ReadDados():
     listaDeProduto = [{
         "nome": linha[1], 
         "marketplace": linha[2],
-        "produto": linha[3],
-        "npedido": linha[4],
-        "telefone": linha[5],
-        "loja": linha[6]
+        "npedido": linha[3],
+        "telefone": linha[4],
     } for linha in dados]
     
     return listaDeProduto
