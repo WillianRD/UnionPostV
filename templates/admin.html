@@ -365,37 +365,31 @@
 function sortear() {
     fetch('/sortear-dme', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantidade: 1 })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.erro)
+        if (data.erro) {
             document.getElementById('resultado').innerText = data.erro;
-        else
-            document.getElementById('resultado').innerText =
-                "Sorteado: " + data.sorteados[0].nome;
+        } else {
+            window.location.href = "/tela-sorteio/" + data.id_sorteio;
+        }
     });
-
-
 }
 function sortear2() {
-    fetch('/sortear', {
+      fetch('/sortear', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantidade: 1 })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.erro)
+        if (data.erro) {
             document.getElementById('resultado').innerText = data.erro;
-        else
-            document.getElementById('resultado').innerText =
-                "Sorteado: " + data.sorteados[0].nome;
+        } else {
+            window.location.href = "/tela-sorteio/" + data.id_sorteio;
+        }
     });
 }
 

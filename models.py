@@ -330,3 +330,17 @@ def get_month_participants():
     conn.close()
 
     return processar_dados(dados)
+
+def create_table_resultado():
+    conn = connect_data()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sorteio_resultado (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            dados TEXT
+        )
+    """)
+
+    conn.commit()
+    conn.close()

@@ -4,11 +4,14 @@ from functools import wraps
 import sqlite3
 import re
 import random
+from models import create_table_resultado
+import json
 
 app = Flask(__name__)
 app.secret_key = 'uma_chave_super_secreta'
 
 DB_FILE = "banco.db"
+create_table_resultado()
 
 
 # -----------------------------
@@ -383,125 +386,131 @@ def api_participantes():
 @app.route("/sortear-dme", methods=["POST"])
 @login_required
 def sortear_dme():
-    data = request.get_json(silent=True) or {}
-
-    cargo = data.get("cargo", "").strip()
-    quantidade = data.get("quantidade", 1)
-
-    try:
-        quantidade = int(quantidade)
-    except (TypeError, ValueError):
-        return jsonify({"erro": "Quantidade inválida."}), 400
-
-    if quantidade < 1:
-        return jsonify({"erro": "A quantidade deve ser maior que zero."}), 400
+    import json
+    import random
 
     conn = connect_data()
     cursor = conn.cursor()
 
-    if cargo:
-        participantes = cursor.execute("""
-        SELECT * FROM clientes
-        WHERE cargo = ?
-        """, ("Secretário de Educação",)).fetchall()
-    else:
-         participantes = cursor.execute("""
-        SELECT * FROM clientes
-        WHERE cargo = ?
-        """, ("Secretário de Educação",)).fetchall()
-
-    conn.close()
+    participantes = cursor.execute("""
+        SELECT id, name, estado, municipio, cargo, telefone
+        FROM clientes
+        WHERE LOWER(cargo) = LOWER(?)
+    """, ("Secretário de Educação",)).fetchall()
 
     if not participantes:
-        return jsonify({"erro": "Nenhum participante encontrado."}), 404
+        conn.close()
+        return jsonify({"erro": "Nenhum Secretário de Educação encontrado."}), 404
 
-    if quantidade > len(participantes):
-        return jsonify({
-            "erro": f"A quantidade solicitada ({quantidade}) é maior que o total de participantes ({len(participantes)})."
-        }), 400
+    sorteado = random.choice(participantes)
 
-    sorteados = random.sample(participantes, quantidade)
-
-    resultado = []
-    for p in sorteados:
-        resultado.append({
+    participantes_json = [
+        {
             "id": p["id"],
             "nome": p["name"],
             "estado": p["estado"],
             "municipio": p["municipio"],
             "cargo": p["cargo"],
             "telefone": p["telefone"]
-        })
+        }
+        for p in participantes
+    ]
+
+    sorteado_json = {
+        "id": sorteado["id"],
+        "nome": sorteado["name"],
+        "estado": sorteado["estado"],
+        "municipio": sorteado["municipio"],
+        "cargo": sorteado["cargo"],
+        "telefone": sorteado["telefone"]
+    }
+
+    payload = {
+        "tipo": "secretario_educacao",
+        "participantes": participantes_json,
+        "sorteado": sorteado_json
+    }
+
+    cursor.execute("""
+        INSERT INTO sorteio_resultado (dados)
+        VALUES (?)
+    """, (json.dumps(payload, ensure_ascii=False),))
+
+    conn.commit()
+    id_sorteio = cursor.lastrowid
+    conn.close()
 
     return jsonify({
-        "total_participantes": len(participantes),
-        "quantidade_sorteada": quantidade,
-        "sorteados": resultado
+        "ok": True,
+        "id_sorteio": id_sorteio
     })
-    
-
 import random
 
 @app.route("/sortear", methods=["POST"])
 @login_required
 def sortear():
-    data = request.get_json(silent=True) or {}
-
-    cargo = data.get("cargo", "").strip()
-    quantidade = data.get("quantidade", 1)
-
-    try:
-        quantidade = int(quantidade)
-    except (TypeError, ValueError):
-        return jsonify({"erro": "Quantidade inválida."}), 400
-
-    if quantidade < 1:
-        return jsonify({"erro": "A quantidade deve ser maior que zero."}), 400
+    import json
+    import random
 
     conn = connect_data()
     cursor = conn.cursor()
 
-    if cargo:
-        participantes = cursor.execute("""
-        SELECT * FROM clientes
-        """,).fetchall()
-    else:
-        participantes = cursor.execute("""
-        SELECT * FROM clientes
-        """,).fetchall()
-
-    conn.close()
+    participantes = cursor.execute("""
+        SELECT id, name, estado, municipio, cargo, telefone
+        FROM clientes
+    """).fetchall()
 
     if not participantes:
+        conn.close()
         return jsonify({"erro": "Nenhum participante encontrado."}), 404
 
-    if quantidade > len(participantes):
-        return jsonify({
-            "erro": f"A quantidade solicitada ({quantidade}) é maior que o total de participantes ({len(participantes)})."
-        }), 400
+    sorteado = random.choice(participantes)
 
-    sorteados = random.sample(participantes, quantidade)
-
-    resultado = []
-    for p in sorteados:
-        resultado.append({
+    participantes_json = [
+        {
             "id": p["id"],
             "nome": p["name"],
             "estado": p["estado"],
             "municipio": p["municipio"],
             "cargo": p["cargo"],
             "telefone": p["telefone"]
-        })
+        }
+        for p in participantes
+    ]
+
+    sorteado_json = {
+        "id": sorteado["id"],
+        "nome": sorteado["name"],
+        "estado": sorteado["estado"],
+        "municipio": sorteado["municipio"],
+        "cargo": sorteado["cargo"],
+        "telefone": sorteado["telefone"]
+    }
+
+    payload = {
+        "tipo": "normal",
+        "participantes": participantes_json,
+        "sorteado": sorteado_json
+    }
+
+    cursor.execute("""
+        INSERT INTO sorteio_resultado (dados)
+        VALUES (?)
+    """, (json.dumps(payload, ensure_ascii=False),))
+
+    conn.commit()
+    id_sorteio = cursor.lastrowid
+    conn.close()
 
     return jsonify({
-        "total_participantes": len(participantes),
-        "quantidade_sorteada": quantidade,
-        "sorteados": resultado
+        "ok": True,
+        "id_sorteio": id_sorteio
     })
-    
+
 @app.route("/tela-sorteio/<int:id>")
+@login_required
 def tela_sorteio(id):
-    return render_template("tela-sorteio.html")
+    return render_template("tela-sorteio.html", id_sorteio=id)
 
 @app.route("/sorteio/<int:id>")
 @login_required
@@ -522,12 +531,45 @@ def get_sorteio(id):
     dados = json.loads(row["dados"])
 
     return jsonify({
-        "nome": dados.get("name", ""),
+        "nome": dados.get("nome", ""),
         "cargo": dados.get("cargo", ""),
         "municipio": dados.get("municipio", ""),
         "estado": dados.get("estado", ""),
         "telefone": dados.get("telefone", "")
     })
+
+@app.route("/buscar-participantes", methods=["GET"])
+@login_required
+def buscar_participantes():
+    conn = connect_data()
+    cursor = conn.cursor()
+
+    participantes = cursor.execute("""
+        SELECT
+            name,
+            telefone,
+            cargo,
+            municipio
+        FROM sorteio
+        ORDER BY id DESC
+    """).fetchall()
+
+    conn.close()
+
+    return jsonify([
+        {
+            "name": p["name"],
+            "telefone": p["telefone"],
+            "cargo": p["cargo"],
+            "municipio": p["municipio"]
+        }
+        for p in participantes
+    ])
+
+@app.route("/telao")
+@login_required
+def telao():
+    return render_template("tela_sorteio.html")
 # -----------------------------
 # Rodar o app
 # -----------------------------
