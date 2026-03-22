@@ -12,9 +12,11 @@ def read_data():
     
     # Converter os dados
     listaDeProduto = [{
+        "id": linha[0],
         "nome": linha[1], 
-        "marketplce": linha[2] ,
-        "npedido": linha[3],
-        "telefone": linha[4]
+        "municipio": linha[2],
+        "cargo": linha[3],
+        "telefone": linha[4],
+        "estado": linha[5],
         } for linha in dados]
     return listaDeProduto

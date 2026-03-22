@@ -8,8 +8,9 @@ def create_table():
     CREATE TABLE IF NOT EXISTS clientes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        marketplace TEXT NOT NULL,
-        npedido TEXT NOT NULL,
+        estado TEXT NOT NULL,
+        municipio TEXT NOT NULL,
+        cargo TEXT NOT NULL,
         telefone TEXT NOT NULL
     )
     """)
@@ -17,4 +18,3 @@ def create_table():
     con.close()
 
 create_table()
-print("Tabela criada com sucesso!")

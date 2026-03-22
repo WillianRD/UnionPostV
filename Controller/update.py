@@ -1,13 +1,14 @@
-
 import sqlite3
 
-def insert_data(nome,marketplace, npedido, telefone):
-    con = sqlite3.connect('banco.db')
-    cursor = con.cursor()
-    
-    sql = '''INSERT INTO clientes
-        (name, marketplace,npedido, telefone)
-        VALUES (?,?,?,?)'''
-    cursor.execute(sql, (nome, marketplace, npedido, telefone))
-    con.commit()
-    cursor.close()
+def insert_data(name, municipio, cargo, telefone, estado):
+
+    with sqlite3.connect("banco.db", timeout=10) as con:
+
+        cursor = con.cursor()
+
+        cursor.execute(''
+            "INSERT INTO clientes (name, municipio, cargo, telefone, estado) VALUES (?, ?, ?, ?, ?)",
+            (name, municipio, cargo, telefone, estado)
+        )
+
+        con.commit()
