@@ -181,10 +181,10 @@ def editar(id):
             return render_template("editar.html", participant=participant)
 
         cursor.execute("""
-            UPDATE clientes
-            SET name = ?, estado = ?, municipio = ?, cargo = ?, telefone = ?
-            WHERE id = ?
-        """, (name, estado, municipio, cargo, telefone, id))
+        UPDATE clientes
+        SET nome = ?, estado = ?, municipio = ?, cargo = ?, telefone = ?
+        WHERE id = ?
+    """, (name, estado, municipio, cargo, telefone, id))
 
         conn.commit()
         conn.close()
@@ -352,15 +352,14 @@ def api_participantes():
 
     if cargo:
         participantes = cursor.execute("""
-            SELECT * FROM clientes
-            WHERE cargo LIKE ?
-            ORDER BY id DESC
-        """, (f"%{cargo}%",)).fetchall()
+        SELECT * FROM clientes
+        WHERE cargo = ?
+        """, ("Secretário de Educação",)).fetchall()
     else:
         participantes = cursor.execute("""
-            SELECT * FROM clientes
-            ORDER BY id DESC
-        """).fetchall()
+        SELECT * FROM clientes
+        WHERE cargo = ?
+        """, ("Secretário de Educação",)).fetchall()
 
     conn.close()
 
@@ -368,7 +367,7 @@ def api_participantes():
     for p in participantes:
         resultado.append({
             "id": p["id"],
-            "nome": p["name"],
+            "nome": p["nome"],
             "estado": p["estado"],
             "municipio": p["municipio"],
             "cargo": p["cargo"],
@@ -403,13 +402,13 @@ def sortear_dme():
     if cargo:
         participantes = cursor.execute("""
         SELECT * FROM clientes
-        WHERE cargo = 'Secretário de Educação'
-""").fetchall()
+        WHERE cargo = ?
+        """, ("Secretário de Educação",)).fetchall()
     else:
-        participantes = cursor.execute("""
-            SELECT * FROM clientes
-        WHERE cargo = 'Secretário de Educação'
-        """).fetchall()
+         participantes = cursor.execute("""
+        SELECT * FROM clientes
+        WHERE cargo = ?
+        """, ("Secretário de Educação",)).fetchall()
 
     conn.close()
 
@@ -443,37 +442,63 @@ def sortear_dme():
 
 import random
 
-@app.route("/sortear", methods=["GET"])
+@app.route("/sortear", methods=["POST"])
 @login_required
 def sortear():
+    data = request.get_json(silent=True) or {}
+
+    cargo = data.get("cargo", "").strip()
+    quantidade = data.get("quantidade", 1)
+
+    try:
+        quantidade = int(quantidade)
+    except (TypeError, ValueError):
+        return jsonify({"erro": "Quantidade inválida."}), 400
+
+    if quantidade < 1:
+        return jsonify({"erro": "A quantidade deve ser maior que zero."}), 400
+
     conn = connect_data()
     cursor = conn.cursor()
 
-    participantes = cursor.execute("""
-        SELECT
-            id,
-            name,
-            telefone,
-            cargo,
-            municipio
-        FROM sorteio
-    """).fetchall()
+    if cargo:
+        participantes = cursor.execute("""
+        SELECT * FROM clientes
+        """,).fetchall()
+    else:
+        participantes = cursor.execute("""
+        SELECT * FROM clientes
+        """,).fetchall()
 
     conn.close()
 
     if not participantes:
-        return jsonify({"erro": "Nenhum participante encontrado"}), 404
+        return jsonify({"erro": "Nenhum participante encontrado."}), 404
 
-    sorteado = random.choice(participantes)
+    if quantidade > len(participantes):
+        return jsonify({
+            "erro": f"A quantidade solicitada ({quantidade}) é maior que o total de participantes ({len(participantes)})."
+        }), 400
+
+    sorteados = random.sample(participantes, quantidade)
+
+    resultado = []
+    for p in sorteados:
+        resultado.append({
+            "id": p["id"],
+            "nome": p["name"],
+            "estado": p["estado"],
+            "municipio": p["municipio"],
+            "cargo": p["cargo"],
+            "telefone": p["telefone"]
+        })
 
     return jsonify({
-        "id": sorteado["id"],
-        "name": sorteado["name"],
-        "telefone": sorteado["telefone"],
-        "cargo": sorteado["cargo"],
-        "municipio": sorteado["municipio"]
+        "total_participantes": len(participantes),
+        "quantidade_sorteada": quantidade,
+        "sorteados": resultado
     })
-
+    
 @app.route("/tela-sorteio/<int:id>")
 def tela_sorteio(id):
     return render_template("tela-sorteio.html")

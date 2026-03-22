@@ -148,15 +148,15 @@
                 </tr>
             </thead>
 
+            {% for p in participantes %}
+            <tr style="border-bottom:1px solid #eee;">
+                <td> {{ p.id }} </td>
+                <td style="padding:10px;">{{ p.nome }}</td>
+                <td>{{ p.municipio }}</td>
+                <td>{{ p.cargo }}</td>
+                <td>{{ p.telefone }}</td>
+                <td>{{ p.criado_em }}</td>
             <tbody>
-                {% for p in participantes %}
-                <tr style="border-bottom:1px solid #eee;">
-                    <td> {{ p.id }} </td>
-                    <td style="padding:10px;">{{ p.name }}</td>
-                    <td>{{ p.municipio }}</td>
-                    <td>{{ p.cargo }}</td>
-                    <td>{{ p.telefone }}</td>
-                    <td>{{ p.criado_em }}</td>
 
 
                     <td>
@@ -179,7 +179,8 @@
 
 
             <a href="{{ url_for('pagina_sorteio') }}">Abrir página de sorteio</a>
-            <button onclick="sortear()">Sortear</button>
+            <button onclick="sortear()">SORTEAR SECRETÁRIO</button>
+            <button onclick="sortear2()">SORTEAR NORMAL</button>
 
 <h2 id="resultado"></h2>
 
@@ -361,16 +362,42 @@
 
 
 
-                function sortear() {
-                    fetch('/sortear-dme')
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.erro)
-                                document.getElementById('resultado').innerText = data.erro;
-                            else
-                                document.getElementById('resultado').innerText = "Sorteado: " + data.nome;
-                        });
-                }
+function sortear() {
+    fetch('/sortear-dme', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ quantidade: 1 })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.erro)
+            document.getElementById('resultado').innerText = data.erro;
+        else
+            document.getElementById('resultado').innerText =
+                "Sorteado: " + data.sorteados[0].nome;
+    });
+
+
+}
+function sortear2() {
+    fetch('/sortear', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ quantidade: 1 })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.erro)
+            document.getElementById('resultado').innerText = data.erro;
+        else
+            document.getElementById('resultado').innerText =
+                "Sorteado: " + data.sorteados[0].nome;
+    });
+}
 
                 document.getElementById("search").addEventListener("keyup", function () {
                     let value = this.value.toLowerCase();
