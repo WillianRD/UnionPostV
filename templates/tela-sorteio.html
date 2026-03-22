@@ -234,7 +234,7 @@
         right:22px;
         top:50%;
         transform:translateY(-50%);
-        height:92px;
+        height:90px;
         border-radius:22px;
         background:rgba(255,255,255,0.10);
         border:2px solid rgba(255,213,74,0.70);
@@ -243,6 +243,14 @@
         pointer-events:none;
     }
 
+    .highlight {
+    position: absolute;
+    top: 115px;
+    width: 100%;
+    height: 90px;
+    border: 2px solid #22c55e;
+    pointer-events: none;
+}
     .slot-list{
         position:absolute;
         left:0;
@@ -253,7 +261,7 @@
     }
 
     .slot-item{
-        height:92px;
+        height:90px;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -431,140 +439,211 @@
         UnionBoard • Tela de sorteio para eventos e apresentações
     </div>
 </div>
-
+</body>
 <script>
-    let participantes = [];
-    let rollingNames = [];
-    let currentOffset = 0;
-    let speed = 24;
-    let rolling = true;
-    let animationFrame = null;
-    let tempo = 5;
-    let sorteadoFinal = null;
+ const idSorteio = parseInt(document.body.dataset.idSorteio, 10);
 
-    const slotList = document.getElementById("slotList");
-    const timerEl = document.getElementById("timer");
-    const totalParticipantesEl = document.getElementById("totalParticipantes");
-    const statusTextoEl = document.getElementById("statusTexto");
-    const statusBadgeEl = document.getElementById("statusBadge");
-    const winnerPanelEl = document.getElementById("winnerPanel");
-    const winnerNameEl = document.getElementById("winnerName");
-    const winnerMetaEl = document.getElementById("winnerMeta");
+let participantes = [];
+let sorteadoFinal = null;
+let rollingList = [];
 
-    async function carregarParticipantes() {
-        const res = await fetch('/buscar-participantes');
+let offset = 0;
+let velocidade = 25;
+let animando = true;
+
+const ITEM_HEIGHT = 90;
+const REPETICOES = 10;
+
+const slotList = document.getElementById("slotList");
+const totalParticipantesEl = document.getElementById("totalParticipantes");
+const timerEl = document.getElementById("timer");
+const winnerPanelEl = document.getElementById("winnerPanel");
+const winnerNameEl = document.getElementById("winnerName");
+const winnerMetaEl = document.getElementById("winnerMeta");
+
+async function carregarDados() {
+    try {
+        const res = await fetch("/api/sorteio/" + idSorteio);
         const data = await res.json();
 
-        if (!Array.isArray(data) || !data.length) {
-            statusTextoEl.textContent = "Sem dados";
-            statusBadgeEl.textContent = "Nenhum participante";
-            slotList.innerHTML = `<div class="slot-item">Nenhum participante encontrado</div>`;
+        if (data.erro) {
+            slotList.innerHTML = `<div class="slot-item">${data.erro}</div>`;
             return;
         }
 
-        participantes = data;
-        totalParticipantesEl.textContent = participantes.length;
-        statusTextoEl.textContent = "Pronto";
-        statusBadgeEl.textContent = "Rolagem iniciada";
+        participantes = data.participantes || [];
+        sorteadoFinal = data.sorteado || null;
 
-        const base = participantes.map(p => ({
-            name: p.name || p.nome || "-",
-            cargo: p.cargo || "-",
-            municipio: p.municipio || "-",
-            telefone: p.telefone || "-"
-        }));
-
-        rollingNames = [];
-        for (let i = 0; i < 8; i++) {
-            rollingNames.push(...base);
+        if (!participantes.length || !sorteadoFinal) {
+            slotList.innerHTML = `<div class="slot-item">Dados do sorteio não encontrados</div>`;
+            return;
         }
 
-        renderRollingList();
-    }
+        totalParticipantesEl.innerText = participantes.length;
 
-    function renderRollingList() {
-        slotList.innerHTML = rollingNames.map(p => `
-            <div class="slot-item">${p.name}</div>
-        `).join('');
-    }
-
-    function animateRoll() {
-        if (!rolling) return;
-
-        currentOffset -= speed;
-
-        const itemHeight = 102; // 92 + margin
-        const resetPoint = -(rollingNames.length * itemHeight / 2);
-
-        if (currentOffset <= resetPoint) {
-            currentOffset = 0;
+        rollingList = [];
+        for (let i = 0; i < REPETICOES; i++) {
+            rollingList.push(...participantes);
         }
 
-        slotList.style.transform = `translateY(${currentOffset}px)`;
-        animationFrame = requestAnimationFrame(animateRoll);
-    }
+        slotList.innerHTML = rollingList.map(p => `
+            <div class="slot-item">${p.nome}</div>
+        `).join("");
 
-    function iniciarTimer() {
-        statusTextoEl.textContent = "Contagem";
-        let intervalo = setInterval(() => {
-            tempo--;
-            timerEl.textContent = tempo;
-
-            if (tempo <= 0) {
-                clearInterval(intervalo);
-                desacelerarESortear();
-            }
-        }, 1000);
-    }
-
-    function escolherAleatorio() {
-        return participantes[Math.floor(Math.random() * participantes.length)];
-    }
-
-    function desacelerarESortear() {
-        statusTextoEl.textContent = "Sorteando";
-        statusBadgeEl.textContent = "Desacelerando rolagem";
-
-        sorteadoFinal = escolherAleatorio();
-
-        let steps = 0;
-        const slow = setInterval(() => {
-            speed = Math.max(2, speed - 1.2);
-            steps++;
-
-            if (steps >= 20) {
-                clearInterval(slow);
-                finalizarRolagem();
-            }
-        }, 120);
-    }
-
-    function finalizarRolagem() {
-        rolling = false;
-        cancelAnimationFrame(animationFrame);
-
-        statusTextoEl.textContent = "Finalizado";
-        statusBadgeEl.textContent = "Resultado revelado";
-
-        winnerNameEl.textContent = sorteadoFinal.name || sorteadoFinal.nome || "-";
-        winnerMetaEl.innerHTML = `
-            <strong>Cargo:</strong> ${sorteadoFinal.cargo || "-"}<br>
-            <strong>Município:</strong> ${sorteadoFinal.municipio || "-"}<br>
-            <strong>Telefone:</strong> ${sorteadoFinal.telefone || "-"}
-        `;
-
-        winnerPanelEl.classList.add("show");
-    }
-
-    async function iniciar() {
-        await carregarParticipantes();
-        if (!participantes.length) return;
-
-        animateRoll();
+        animar();
         iniciarTimer();
+    } catch (e) {
+        console.error(e);
+        slotList.innerHTML = `<div class="slot-item">Erro ao carregar sorteio</div>`;
+    }
+}
+
+function animar() {
+    if (!animando) return;
+
+    offset -= velocidade;
+
+    const metadeListaPx = (rollingList.length * ITEM_HEIGHT) / 2;
+    if (Math.abs(offset) >= metadeListaPx) {
+        offset = 0;
     }
 
-    iniciar();
+    slotList.style.transform = `translateY(${offset}px)`;
+    requestAnimationFrame(animar);
+}
+
+function iniciarTimer() {
+    let tempo = 5;
+    timerEl.innerText = tempo;
+
+    const intervalo = setInterval(() => {
+        tempo--;
+        timerEl.innerText = tempo;
+
+        if (tempo <= 0) {
+            clearInterval(intervalo);
+            desacelerar();
+        }
+    }, 1000);
+}
+
+function desacelerar() {
+    let passos = 0;
+
+    const intervalo = setInterval(() => {
+        velocidade = Math.max(4, velocidade - 1.4);
+        passos++;
+
+        if (passos >= 18) {
+            clearInterval(intervalo);
+            alinharNoSorteado();
+        }
+    }, 120);
+}
+
+function alinharNoSorteado() {
+    animando = false;
+
+    const nomeSorteado = (sorteadoFinal.nome || "").trim().toLowerCase();
+
+    const indices = rollingList
+        .map((p, i) => ({
+            index: i,
+            nome: (p.nome || "").trim().toLowerCase()
+        }))
+        .filter(p => p.nome === nomeSorteado)
+        .map(p => p.index);
+
+    if (!indices.length) {
+        console.log("Não encontrou o sorteado na lista");
+        mostrarResultado();
+        return;
+    }
+
+    const slotFrame = document.querySelector(".slot-frame");
+    const highlight = document.querySelector(".highlight");
+
+    const frameRect = slotFrame.getBoundingClientRect();
+    const highlightRect = highlight.getBoundingClientRect();
+
+    const centroReal = (highlightRect.top - frameRect.top) + (highlightRect.height / 2);
+
+    const posicaoAtual = Math.abs(offset) / ITEM_HEIGHT;
+
+    const indiceEscolhido = indices.reduce((maisProximo, atual) => {
+        return Math.abs(atual - posicaoAtual) < Math.abs(maisProximo - posicaoAtual)
+            ? atual
+            : maisProximo;
+    });
+
+    const targetOffset = centroReal - (indiceEscolhido * ITEM_HEIGHT) - (ITEM_HEIGHT / 2);
+
+    console.log("Nome sorteado:", nomeSorteado);
+    console.log("Índice escolhido:", indiceEscolhido);
+    console.log("Target offset:", targetOffset);
+
+    animarAte(targetOffset, 900, mostrarResultado);
+}
+
+function animarAte(targetOffset, duracao, callback) {
+    const inicio = offset;
+    const diferenca = targetOffset - inicio;
+    const start = performance.now();
+
+    function frame(agora) {
+        const progresso = Math.min((agora - start) / duracao, 1);
+        const ease = 1 - Math.pow(1 - progresso, 3);
+
+        offset = inicio + diferenca * ease;
+        slotList.style.transform = `translateY(${offset}px)`;
+
+        if (progresso < 1) {
+            requestAnimationFrame(frame);
+        } else {
+            offset = targetOffset;
+            slotList.style.transform = `translateY(${offset}px)`;
+
+            console.log("Animação finalizada");
+            if (typeof callback === "function") {
+                callback();
+            }
+        }
+    }
+
+    requestAnimationFrame(frame);
+}
+
+function mostrarResultado() {
+    console.log("mostrarResultado foi chamada");
+    console.log("sorteadoFinal:", sorteadoFinal);
+
+    if (!sorteadoFinal) {
+        console.error("sorteadoFinal está vazio");
+        return;
+    }
+
+    const winnerPanel = document.getElementById("winnerPanel");
+    const winnerName = document.getElementById("winnerName");
+    const winnerMeta = document.getElementById("winnerMeta");
+
+    if (!winnerPanel || !winnerName || !winnerMeta) {
+        console.error("Elementos do painel final não encontrados");
+        return;
+    }
+
+    winnerName.innerText = sorteadoFinal.nome || "-";
+    winnerMeta.innerHTML = `
+        <strong>Cargo:</strong> ${sorteadoFinal.cargo || "-"}<br>
+        <strong>Município:</strong> ${sorteadoFinal.municipio || "-"} - ${sorteadoFinal.estado || "-"}<br>
+        <strong>Telefone:</strong> ${sorteadoFinal.telefone || "-"}
+    `;
+
+    winnerPanel.classList.add("show");
+}
+
+    winnerPanel.classList.add("show");
+carregarDados();
+
 </script>
 
 </body>

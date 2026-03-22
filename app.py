@@ -538,6 +538,27 @@ def get_sorteio(id):
         "telefone": dados.get("telefone", "")
     })
 
+@app.route("/api/sorteio/<int:id>")
+@login_required
+def api_sorteio(id):
+    import json
+
+    conn = connect_data()
+    cursor = conn.cursor()
+
+    row = cursor.execute("""
+        SELECT dados
+        FROM sorteio_resultado
+        WHERE id = ?
+    """, (id,)).fetchone()
+
+    conn.close()
+
+    if not row:
+        return jsonify({"erro": "Sorteio não encontrado"}), 404
+
+    return jsonify(json.loads(row["dados"]))
+
 @app.route("/buscar-participantes", methods=["GET"])
 @login_required
 def buscar_participantes():
