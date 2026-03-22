@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Resultado do Sorteio</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+    padding-top: 100px;
+}
+
+.card {
+    background: #020617;
+    padding: 40px;
+    border-radius: 16px;
+    display: inline-block;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+.nome {
+    font-size: 32px;
+    color: #22c55e;
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>🎉 Resultado</h1>
+    <div id="conteudo"></div>
+</div>
+
+<script>
+const dados = JSON.parse(localStorage.getItem("resultadoSorteio"));
+
+const el = document.getElementById("conteudo");
+
+if (!dados) {
+    el.innerHTML = "Nenhum resultado encontrado.";
+} else {
+
+    if (dados.sorteados) {
+        el.innerHTML = dados.sorteados.map(p => `
+            <div class="nome">${p.nome}</div>
+            <div>${p.cargo}</div>
+            <hr>
+        `).join("");
+    } else {
+        el.innerHTML = `
+            <div class="nome">${dados.sorteado.nome}</div>
+            <div>${dados.sorteado.cargo}</div>
+        `;
+    }
+}
+
+const id = window.location.pathname.split("/").pop();
+
+async function carregar() {
+    const res = await fetch(`/api/sorteio/${id}`);
+    const data = await res.json();
+
+    document.body.innerHTML = `
+        <h1>🎉 Resultado</h1>
+        <h2>${data.nome}</h2>
+        <p>${data.cargo}</p>
+    `;
+}
+
+carregar();
+</script>
+
+</body>
+</html>

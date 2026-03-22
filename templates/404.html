@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Página não encontrada</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Barlow:300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+
+<!-- CSS -->
+<style>
+    /* Ajuste base para telas pequenas */
+@media (max-width: 768px) {
+    .wrapper .container {
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .scene {
+        width: 100%;
+        height: 50vh;
+        top: 0 !important;
+        left: 0 !important;
+    }
+
+    .p404 {
+        font-size: 100px !important;
+        top: 10% !important;
+    }
+
+    .text article {
+        width: 90% !important;
+        font-size: 14px;
+        bottom: 10% !important;
+    }
+
+    .text article button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .one, .two, .three {
+        width: 80% !important;
+        height: 50% !important;
+        min-width: auto !important;
+        min-height: auto !important;
+        top: 5% !important;
+        left: 10% !important;
+    }
+
+    .one .content, .two .content, .three .content {
+        width: 300px !important;
+        height: 300px !important;
+    }
+
+    .one .piece, .two .piece, .three .piece {
+        width: 60px !important;
+        height: 20px !important;
+    }
+}
+
+/* Ajuste extra para telas muito pequenas */
+@media (max-width: 480px) {
+    .p404 {
+        font-size: 60px !important;
+    }
+    .text article {
+        font-size: 12px;
+    }
+    .text article button {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}
+/* Reset básico */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body, html { width: 100%; height: 100%; font-family: 'Barlow', sans-serif; background: #695681; overflow: hidden; }
+
+/* Container principal */
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+}
+
+/* Cena parallax */
+.scene { width: 100%; height: 100%; position: absolute; top:0; left:0; }
+
+/* Círculos e peças animadas */
+.circle, .one, .two, .three { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.circle::before {
+  content:""; display:block; width:600px; height:600px; background: rgba(54,24,79,0.2); border-radius:50%;
+  box-shadow: inset 5px 20px 40px rgba(54,24,79,0.25), 2px 2px 5px rgba(255,255,255,0.2);
+}
+.one .piece, .two .piece, .three .piece {
+  position:absolute; border-radius:50px; opacity:0.8;
+}
+.one .piece { width:120px; height:30px; background: #8077EA; top:20%; left:10%; animation: moveLeft 8s infinite; }
+.two .piece { width:150px; height:50px; background: #FFEDC0; top:50%; left:20%; animation: moveRight 8s infinite; }
+.three .piece { width:80px; height:20px; background: #FB8A8A; top:75%; left:30%; animation: moveLeft 8s infinite; }
+
+@keyframes moveLeft { 0%,100%{left:10%} 50%{left:80%; width:10%;} }
+@keyframes moveRight { 0%,100%{left:20%} 50%{left:0; width:10%;} }
+
+/* Texto 404 */
+.p404 {
+  position:absolute; font-size:180px; font-weight:700; color:white;
+  top:30%; left:50%; transform:translateX(-50%); z-index:2;
+}
+.p404:nth-of-type(2) { color:#36184F; filter:blur(10px); top:32%; z-index:1; }
+
+/* Texto e botão */
+.text { position:absolute; bottom:50px; width:100%; text-align:center; z-index:3; color:white; }
+.text p { font-size:18px; margin-bottom:20px; }
+.text button {
+  padding: 10px 30px; border:none; border-radius:50px; cursor:pointer;
+  background:white; color:#695681; font-weight:600;
+  transition: 0.3s;
+}
+.text button:hover { background:#FB8A8A; color:white; transform:translateY(3px); }
+
+/* Logo/social fixos */
+.about {
+  position: fixed; bottom:10px; right:10px; display:flex; gap:10px; z-index:10;
+}
+.about a { width:40px; height:40px; display:flex; justify-content:center; align-items:center; background: rgba(0,0,0,0.1); border-radius:50%; }
+.about a img { width:60%; height:60%; }
+
+/* Botão responsivo e centralizado */
+.text article button {
+    height: 45px;
+    padding: 0 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0px 10px 15px rgba(0,0,0,0.2);
+    color: #695681; /* cor do texto */
+    background-color: white;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+/* Hover e toque */
+.text article button:hover,
+.text article button:active {
+    transform: translateY(3px);
+    background-color: #FB8A8A; /* gradiente ou cor principal */
+    color: white;
+    box-shadow: 0px 8px 12px rgba(0,0,0,0.2);
+}
+
+/* Ajuste para telas pequenas */
+@media (max-width: 768px) {
+    .text article button {
+        width: 70%;
+        font-size: 13px;
+        padding: 10px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .text article button {
+        width: 90%;
+        font-size: 12px;
+        padding: 12px 0;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- Parallax scene -->
+<div class="wrapper">
+  <div id="scene" class="scene">
+    <div class="circle" data-depth="1.2"></div>
+    <div class="one" data-depth="0.9"><div class="piece"></div><div class="piece"></div><div class="piece"></div></div>
+    <div class="two" data-depth="0.6"><div class="piece"></div><div class="piece"></div><div class="piece"></div></div>
+    <div class="three" data-depth="0.4"><div class="piece"></div><div class="piece"></div><div class="piece"></div></div>
+    <p class="p404" data-depth="0.5">404</p>
+    <p class="p404" data-depth="0.1">404</p>
+  </div>
+  <div class="text">
+    <p>"Ops! Parece que você entrou numa dimensão desconhecida."</p>
+    <button onclick="window.location='/'">Voltar!!</button>
+  </div>
+</div>
+
+<!-- Social links -->
+<div class="about">
+  <a href=https://br.linkedin.com/company/showdeimagem" target="_blank"><img src="https://rafaelavlucas.github.io/assets/codepen/linkedin.svg" alt="LinkedIn"></a>
+</div>
+
+<!-- JS Parallax -->
+<script src="https://cdn.jsdelivr.net/npm/parallax-js@3.1.0/dist/parallax.min.js"></script>
+<script>
+  var scene = document.getElementById('scene');
+  var parallax = new Parallax(scene, { hoverOnly: true });
+</script>
+
+</body>
+</html>

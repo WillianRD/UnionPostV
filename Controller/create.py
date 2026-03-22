@@ -14,6 +14,7 @@ def create_table():
         telefone TEXT NOT NULL
     )
     """)
+
     con.commit()
     con.close()
 

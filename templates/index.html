@@ -13,7 +13,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <!-- Fonte opcional -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="shortcut icon" href="../static/Logo/logo.ico" type="imgem/x-icon">
   <style>
     :root {
@@ -172,6 +172,77 @@
       color: #64748b;
       margin-top: 15px;
     }
+
+    .modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  margin: 15% auto;
+  width: 300px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.modal-content button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: none;
+  background: #e74c3c;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Corrige o container do Select2 */
+.select2-container .select2-selection--single {
+  height: 52px !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  display: flex;
+  align-items: center;
+  padding-left: 40px;
+  font-size: 15px;
+}
+
+/* Texto selecionado */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #111;
+  line-height: normal !important;
+}
+
+/* Ícone da seta */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 100%;
+  right: 10px;
+}
+
+/* Campo de busca interno */
+.select2-search__field {
+  padding: 10px !important;
+}
+
+/* Dropdown */
+.select2-dropdown {
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Hover e foco */
+.select2-container--default.select2-container--focus .select2-selection--single {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .15) !important;
+}
   </style>
 </head>
 
@@ -207,17 +278,37 @@
           </div>
         </div>
 
+                <div class="mb-3">
+          <label for="telefone" class="form-label">Telefone (WhatsApp)</label>
+          <div class="input-icon">
+            <i class="bi bi-telephone"></i>
+            <input id="telefone" name="telefone" type="tel" class="form-control" placeholder="(00) 00000-0000"
+              maxlength="15" required>
+          </div>
+        </div>
+
         <div class="mb-3">
 
+          <div class="mb-3">
+  <label for="municipio" class="form-label">Estado</label>
 <select id="estado" name="estado" class="form-control" required>
 <option value="">Selecione o estado</option>
 </select>
 
 </div>
 
-<select id="municipio" name="municipio" class="form-control" required>
-<option value="">Selecione o município</option>
-</select>
+<div class="mb-3">
+  <label for="municipio" class="form-label">Município</label>
+  
+  <div class="input-icon">
+    <i class="bi bi-geo-alt"></i>
+
+    <select id="municipio" name="municipio" class="form-control" required>
+      <option value="">Selecione o município</option>
+    </select>
+
+  </div>
+</div>
 
        <!--
 <div class="mb-3">
@@ -275,15 +366,6 @@
   </div>
 </div>
 
-        <div class="mb-3">
-          <label for="telefone" class="form-label">Telefone (WhatsApp)</label>
-          <div class="input-icon">
-            <i class="bi bi-telephone"></i>
-            <input id="telefone" name="telefone" type="tel" class="form-control" placeholder="(00) 00000-0000"
-              maxlength="15" required>
-          </div>
-        </div>
-
         <div class="d-grid gap-2">
           <button type="submit" class="btn btn-primary btn-lg">Enviar Dados</button>
         </div>
@@ -295,13 +377,38 @@
     </div>
   </div>
 
+<div id="modalErro" class="modal">
+  <div class="modal-content">
+    <p id="mensagemErro"></p>
+    <button onclick="fecharModal()">OK</button>
+  </div>
+</div>
 
+<script>
+function sortear() {
+    fetch('/sortear-dme')
+        .then(res => res.json())
+        .then(data => {
+            alert("Sorteado: " + data.nome);
+        });
+}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <!-- JS Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     crossorigin="anonymous"></script>
 
   <script>
-    const telefoneInput = document.getElementById('telefone');
+$(document).ready(function() {
+  $('#municipio').select2({
+    placeholder: "Buscar município...",
+    width: '100%'
+  });
+});
+
+const telefoneInput = document.getElementById('telefone');
 
     telefoneInput.addEventListener('input', (e) => {
       let value = e.target.value.replace(/\D/g, '');
@@ -361,8 +468,6 @@ const uf = this.value
 
 const municipioSelect = document.getElementById("municipio")
 
-municipioSelect.innerHTML = "<option>Carregando...</option>"
-
 const url = `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`
 
 const resposta = await fetch(url)
@@ -370,19 +475,26 @@ const resposta = await fetch(url)
 const municipios = await resposta.json()
 
 municipioSelect.innerHTML = ""
+municipioSelect.innerHTML = '<option value="">Selecione o município</option>'
 
 municipios.forEach(m => {
+  const option = document.createElement("option")
+  option.value = m.nome
+  option.textContent = m.nome
+  municipioSelect.appendChild(option)
+})
 
-const option = document.createElement("option")
+// 🔥 ATUALIZA O SELECT2
+$('#municipio').select2('destroy')
 
-option.value = m.nome
-option.textContent = m.nome
-
-municipioSelect.appendChild(option)
-
+$('#municipio').select2({
+  placeholder: "Buscar município...",
+  width: '100%'
 })
 
 })
+
+
 
   </script>
 </body>

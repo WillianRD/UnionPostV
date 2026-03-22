@@ -2,201 +2,432 @@
 <html lang="pt-br">
 
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Painel Admin</title>
 
-<title>Painel Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f4f6fb;
+            font-family: system-ui;
+        }
 
-<style>
+        .navbar {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
 
-body{
-background:#f5f7fb;
-}
+        .card-metric {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+            transition: 0.2s;
+        }
 
-.card-metric{
-border:none;
-border-radius:14px;
-box-shadow:0 6px 20px rgba(0,0,0,0.08);
-}
+        .card-metric:hover {
+            transform: translateY(-3px);
+        }
 
-.table{
-background:white;
-border-radius:12px;
-overflow:hidden;
-}
+        .metric-icon {
+            font-size: 28px;
+            opacity: .7;
+        }
 
-.header-title{
-font-weight:700;
-}
+        .table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
 
-</style>
+        .header-title {
+            font-weight: 700;
+        }
 
+        .filter-box {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .table thead {
+            background: #f8f9fc;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 20px;
+        }
+
+        a {
+            margin-right: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #1e88e5;
+        }
+    </style>
+    </style>
 </head>
 
 <body>
 
-<div class="container py-5">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <span class="navbar-brand">
+                <i class="bi bi-speedometer2"></i>
+                Painel Administrativo
+            </span>
 
-<button class="btn btn-primary w-100">
-Inicio
-<a href="/"</button>
+            <a href="/" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-house"></i>
+                Início
+            </a>
+        </div>
+    </nav>
 
-<h2 class="header-title mb-4">
-Painel de Participantes
-</h2>
+    <div class="container py-5">
 
-<!-- métricas -->
+        <h2 class="header-title mb-4">
+            Participantes do Evento
+        </h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
 
-<div class="row mb-4">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>{{ filtro if filtro else "Todos os registros" }}</h2>
 
-<div class="col-md-3">
-<div class="card card-metric p-3">
-<h6>Total</h6>
-<h3>{{ participantes|length }}</h3>
-</div>
-</div>
+            <div>
+                <a href="/admin">Todos</a>
+                <a href="/hoje">Hoje</a>
+                <a href="/semana">7 dias</a>
+                <a href="/mes">Mês</a>
+            </div>
+        </div>
 
-<div class="col-md-3">
-<div class="card card-metric p-3">
-<h6>Prefeitos</h6>
-<h3>{{ prefeitos }}</h3>
-</div>
-</div>
+        <div style="display:flex; gap:20px; margin:20px 0;">
 
-<div class="col-md-3">
-<div class="card card-metric p-3">
-<h6>Secretários</h6>
-<h3>{{ secretarios }}</h3>
-</div>
-</div>
+            <div style="flex:1; padding:20px; background:#111; color:#fff; border-radius:10px;">
+                <h3>Total</h3>
+                <h1>{{ participantes|length }}</h1>
+            </div>
 
-<div class="col-md-3">
-<div class="card card-metric p-3">
-<h6>Vice</h6>
-<h3>{{ vice }}</h3>
-</div>
-</div>
+            <div style="flex:1; padding:20px; background:#1e88e5; color:#fff; border-radius:10px;">
+                <h3>Prefeitos</h3>
+                <h1>{{ prefeitos }}</h1>
+            </div>
 
-</div>
+            <div style="flex:1; padding:20px; background:#43a047; color:#fff; border-radius:10px;">
+                <h3>Secretários</h3>
+                <h1>{{ secretarios_educacao }}</h1>
+            </div>
 
+        </div>
+        <table style="width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden;">
 
-<!-- filtro -->
+            <thead style="background:#222; color:white;">
+                <tr>
+                    <th>ID</th>
+                    <th style="padding:12px;">Nome</th>
+                    <th>Município</th>
+                    <th>Cargo</th>
+                    <th>Telefone</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
 
-<div class="card p-3 mb-4">
-
-<form method="get" class="row g-3">
-
-<div class="col-md-4">
-
-<select name="cargo" class="form-select">
-
-<option value="">Filtrar por cargo</option>
-<option value="Prefeito">Prefeito</option>
-<option value="Vereador">Vereador</option>
-<option value="Dirigente Municipal de Educação">Dirigente Municipal de Educação</option>
-<option value="Secretário de Educação">Secretário de Educação</option>
-<option value="Secretário Adjunto de Educação">Secretário Adjunto de Educação</option>
-
-<option value="Subsecretário de Educação">Subsecretário de Educação</option>
-
-<option value="Diretor de Ensino">Diretor de Ensino</option>
-<option value="Diretor Escolar">Diretor Escolar</option>
-<option value="Vice-diretor">Vice-diretor</option>
-
-<option value="Coordenador Pedagógico">Coordenador Pedagógico</option>
-<option value="Coordenador Educacional">Coordenador Educacional</option>
-<option value="Coordenador de Projetos">Coordenador de Projetos</option>
-
-<option value="Supervisor de Ensino">Supervisor de Ensino</option>
-<option value="Orientador Educacional">Orientador Educacional</option>
-
-<option value="Professor">Professor</option>
-
-<option value="Técnico Educacional">Técnico Educacional</option>
-<option value="Técnico Pedagógico">Técnico Pedagógico</option>
-<option value="Técnico Pedagógico">Técnico</option>
-<option value="Gestor de Programas Educacionais">Gestor de Programas Educacionais</option>
-<option value="Coordenador do Fundeb">Coordenador do Fundeb</option>
-<option value="Coordenador da Merenda Escolar">Coordenador da Merenda Escolar</option>
-<option value="Analista Educacional">Analista Educacional</option>
-<option value="Gestor de Tecnologia Educacional">Gestor de Tecnologia Educacional</option>
-<option value="Outro">Outro</option>
+            <tbody>
+                {% for p in participantes %}
+                <tr style="border-bottom:1px solid #eee;">
+                    <td> {{ p.id }} </td>
+                    <td style="padding:10px;">{{ p.name }}</td>
+                    <td>{{ p.municipio }}</td>
+                    <td>{{ p.cargo }}</td>
+                    <td>{{ p.telefone }}</td>
+                    <td>{{ p.criado_em }}</td>
 
 
-</select>
+                    <td>
+                        <a href="{{ url_for('editar', id=p.id) }}" class="btn btn-warning btn-sm me-1">
+                            Editar
+                        </a>
 
-</div>
+                        <a href="/deletar/{{ p.id }}" class="btn btn-danger btn-sm"
+                            onclick="return confirm('⚠️ Atenção!\n\nDeseja realmente excluir este registro?\nEssa ação não pode ser desfeita.')">
+                            Excluir
+                        </a>
+                    </td>
+                </tr>
 
-<div class="col-md-2">
 
-<button class="btn btn-primary w-100">
-Filtrar
-</button>
+                {% endfor %}
 
-</div>
 
-</form>
+            </tbody>
 
-</div>
 
-<!-- tabela -->
+            <a href="{{ url_for('pagina_sorteio') }}">Abrir página de sorteio</a>
+            <button onclick="sortear()">Sortear</button>
 
-<div class="card p-3">
+<h2 id="resultado"></h2>
 
-<div class="table-responsive">
 
-<table class="table table-hover">
+            <!----> <!-- MÉTRICAS 
+        <div class="row mb-4 g-3">
 
-<thead class="table-light">
+            <div class="col-md-3">
+                <div class="card card-metric p-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>Total</h6>
+                            <h3>{{ participantes|length }}</h3>
+                        </div>
+                        <i class="bi bi-people metric-icon"></i>
+                    </div>
+                </div>
+            </div>
 
-<tr>
-<th>ID</th>
-<th>Nome</th>
-<th>Municipio</th>
-<th>Cargo</th>
-<th>Telefone</th>
-<th>Estado</th>
-</tr>
+            <div class="col-md-3">
+                <div class="card card-metric p-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>Prefeitos</h6>
+                            <h3>{{ prefeitos }}</h3>
+                        </div>
+                        <i class="bi bi-building metric-icon"></i>
+                    </div>
+                </div>
+            </div>
 
-</thead>
+            <div class="col-md-3">
+                <div class="card card-metric p-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>Secretários</h6>
+                            <h3>{{ secretarios }}</h3>
+                        </div>
+                        <i class="bi bi-person-badge metric-icon"></i>
+                    </div>
+                </div>
+            </div>
 
-<tbody>
+            <div class="col-md-3">
+                <div class="card card-metric p-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>Vice</h6>
+                            <h3>{{ vice }}</h3>
+                        </div>
+                        <i class="bi bi-person metric-icon"></i>
+                    </div>
+                </div>
+            </div>
 
-{% for p in participantes %}
+        </div>
 
-<tr>
+    FILTRO 
+        <div class="card filter-box p-4 mb-4">
+            <form method="get" class="row g-3">
 
-<td>{{ p.id }}</td>
+                <div class="col-md-4">
+                    <select name="cargo" class="form-select">
+                        <option value="">Filtrar por cargo</option>
+                        <option value="Prefeito">Prefeito</option>
+                        <option value="Vereador">Vereador</option>
+                        <option value="Dirigente Municipal de Educação">Dirigente Municipal de Educação</option>
+                        <option value="Secretário de Educação">Secretário de Educação</option>
+                        <option value="Secretário Adjunto de Educação">Secretário Adjunto de Educação</option>
+                        <option value="Subsecretário de Educação">Subsecretário de Educação</option>
+                        <option value="Diretor de Ensino">Diretor de Ensino</option>
+                        <option value="Diretor Escolar">Diretor Escolar</option>
+                        <option value="Vice-diretor">Vice-diretor</option>
+                        <option value="Coordenador Pedagógico">Coordenador Pedagógico</option>
+                        <option value="Coordenador Educacional">Coordenador Educacional</option>
+                        <option value="Coordenador de Projetos">Coordenador de Projetos</option>
+                        <option value="Supervisor de Ensino">Supervisor de Ensino</option>
+                        <option value="Orientador Educacional">Orientador Educacional</option>
+                        <option value="Professor">Professor</option>
+                        <option value="Técnico Educacional">Técnico Educacional</option>
+                        <option value="Técnico Pedagógico">Técnico Pedagógico</option>
+                        <option value="Técnico">Técnico</option>
+                        <option value="Gestor de Programas Educacionais">Gestor de Programas Educacionais</option>
+                        <option value="Coordenador do Fundeb">Coordenador do Fundeb</option>
+                        <option value="Coordenador da Merenda Escolar">Coordenador da Merenda Escolar</option>
+                        <option value="Analista Educacional">Analista Educacional</option>
+                        <option value="Gestor de Tecnologia Educacional">Gestor de Tecnologia Educacional</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
 
-<td>{{ p.nome }}</td>
+                <div class="col-md-4">
+                    <input type="text" id="search" class="form-control" placeholder="Buscar por nome...">
+                </div>
 
-<td> {{ p.estado }}</td>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i>
+                        Filtrar
+                    </button>
+                </div>
 
-<td>{{ p.municipio }}</td>
+            </form>
+        </div>
 
-<td>
-<span class="badge bg-primary">
-{{ p.cargo }}
-</span>
-</td>
+  TABELA
+        <form method="POST" action="/deletar-massa" onsubmit="return confirmarExclusaoMassa()">
 
-<td>{{ p.telefone }}</td>
+            <button class="btn btn-danger mb-3" type="submit">
+                Excluir selecionados
+            </button>
 
-</tr>
+            <div class="card p-3">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" onclick="toggle(this)">
+                                </th>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Município</th>
+                                <th>Estado</th>
+                                <th>Cargo</th>
+                                <th>Telefone</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
 
-{% endfor %}
+                        <tbody id="tbody-acoes">
+                            {% for p in participantes %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="ids" value="{{ p.id }}">
+                                </td>
 
-</tbody>
+                                <td>{{ p.id }}</td>
+                                <td>{{ p.name }}</td>
+                                <td>{{ p.municipio }}</td>
+                                <td>{{ p.estado }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ p.cargo }}</span>
+                                </td>
+                                <td>{{ p.telefone }}</td>
 
-</table>
+                                <td>
+                                    <a href="/editar/{{ p.id }}" class="btn btn-warning btn-sm me-1">
+                                        Editar
+                                    </a>
 
-</div>
+                                    <a href="/deletar/{{ p.id }}"
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('⚠️ Atenção!\n\nDeseja realmente excluir este registro?\nEssa ação não pode ser desfeita.')">
+                                       Excluir
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-</div>
+        </form>
 
-</div>
+    </div>
+-->
+
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+                <a href="/exportar" class="btn btn-success">
+                    <i class="bi bi-download"></i> Exportar CSV
+                </a>
+                <input type="text" id="search" class="form-control w-50" placeholder="Buscar por nome...">
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+            <script>
+
+
+
+                function sortear() {
+                    fetch('/sortear-dme')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.erro)
+                                document.getElementById('resultado').innerText = data.erro;
+                            else
+                                document.getElementById('resultado').innerText = "Sorteado: " + data.nome;
+                        });
+                }
+
+                document.getElementById("search").addEventListener("keyup", function () {
+                    let value = this.value.toLowerCase();
+                    let rows = document.querySelectorAll("tbody tr");
+
+                    rows.forEach(row => {
+                        let nome = row.children[1].innerText.toLowerCase();
+                        row.style.display = nome.includes(value) ? "" : "none";
+                    });
+                });
+
+                function toggle(source) {
+                    checkboxes = document.getElementsByName('ids');
+                    for (let i = 0; i < checkboxes.length; i++) {
+                        checkboxes[i].checked = source.checked;
+                    }
+                }
+
+                setTimeout(() => {
+                    document.querySelectorAll('.alert').forEach(alert => {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    });
+                }, 3000);
+                const searchInput = document.getElementById("search");
+
+                if (searchInput) {
+                    searchInput.addEventListener("keyup", function () {
+                        let value = this.value.toLowerCase();
+                        let rows = document.querySelectorAll("#tbody-acoes tr");
+
+                        rows.forEach(row => {
+                            let nome = row.children[2].innerText.toLowerCase();
+                            row.style.display = nome.includes(value) ? "" : "none";
+                        });
+                    });
+                }
+
+                function toggle(source) {
+                    let checkboxes = document.getElementsByName('ids');
+                    for (let i = 0; i < checkboxes.length; i++) {
+                        checkboxes[i].checked = source.checked;
+                    }
+                }
+
+                function confirmarExclusaoMassa() {
+                    let selecionados = document.querySelectorAll('input[name="ids"]:checked');
+
+                    if (selecionados.length === 0) {
+                        alert("Selecione pelo menos um registro para excluir.");
+                        return false;
+                    }
+
+                    return confirm("⚠️ Atenção!\n\nDeseja realmente excluir os registros selecionados?\nEssa ação não pode ser desfeita.");
+                }
+            </script>
 
 </body>
+
 </html>

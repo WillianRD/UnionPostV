@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Sorteio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .resultado {
+            background: #eff6ff;
+            border: 2px dashed #93c5fd;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 120px;
+        }
+
+        .participante {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .participante:last-child {
+            border-bottom: none;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .small-btn {
+            width: auto;
+            padding: 10px 14px;
+            text-decoration: none;
+            background: #111827;
+            color: white;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        @media (max-width: 800px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <h1>🎉 Painel de Sorteio</h1>
+            <a href="/admin" class="small-btn">Voltar ao admin</a>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Configurações do sorteio</h2>
+
+                <label for="cargo">Filtrar por cargo</label>
+                <select id="cargo">
+                    <option value="">Todos os cargos</option>
+                    {% for cargo in cargos %}
+                        <option value="{{ cargo }}">{{ cargo }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="quantidade">Quantidade de sorteados</label>
+               <input type="number" id="quantidade" value="1" min="1">
+
+               <button id="btnAtualizar">Atualizar participantes</button>
+               <button id="btnSortear">Realizar sorteio 2</button>
+               <button id="btnSortearAleatorio">Sorteio Roleta 1</button>
+
+                <p><strong>Total de participantes encontrados:</strong> <span id="totalParticipantes">0</span></p>
+            </div>
+
+            <div class="card">
+                <h2>Resultado</h2>
+                <div id="resultado" class="resultado">
+                    <span class="muted">Nenhum sorteio realizado ainda.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Participantes encontrados</h2>
+            <div id="listaParticipantes">
+                <span class="muted">Carregando participantes...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cargoEl = document.getElementById("cargo");
+        const quantidadeEl = document.getElementById("quantidade");
+        const totalParticipantesEl = document.getElementById("totalParticipantes");
+        const listaParticipantesEl = document.getElementById("listaParticipantes");
+        const resultadoEl = document.getElementById("resultado");
+        const btnAtualizar = document.getElementById("btnAtualizar");
+        const btnSortear = document.getElementById("btnSortear");
+        const btnSortearAleatorio = document.getElementById("btnSortearAleatorio");
+
+
+        async function carregarParticipantes() {
+            const cargo = cargoEl.value;
+            let url = "/api/participantes";
+
+            if (cargo) {
+                url += `?cargo=${encodeURIComponent(cargo)}`;
+            }
+
+            const response = await fetch(url);
+            const dados = await response.json();
+
+            totalParticipantesEl.textContent = dados.length;
+
+            if (!dados.length) {
+                listaParticipantesEl.innerHTML = '<span class="muted">Nenhum participante encontrado.</span>';
+                return;
+            }
+
+            listaParticipantesEl.innerHTML = dados.map(p => `
+                <div class="participante">
+                    <strong>${p.nome}</strong><br>
+                    <span>${p.cargo}</span><br>
+                    <span class="muted">${p.municipio || "-"} / ${p.estado || "-"}</span><br>
+                    <span class="muted">${p.telefone || "-"}</span>
+                </div>
+            `).join("");
+        }
+
+async function sortearAleatorio() {
+
+    const response = await fetch("/sortear-aleatorio", {
+        method: "POST"
+    });
+
+    const dados = await response.json();
+
+    if (!response.ok) {
+        alert("Erro no sorteio");
+        return;
+    }
+
+    // redireciona com ID
+    window.location.href = `/tela-sorteio/${dados.id}`;
+}
+
+        async function realizarSorteio() {
+            const cargo = cargoEl.value;
+            const quantidade = parseInt(quantidadeEl.value || "1", 10);
+
+            const response = await fetch("/sortear-dme", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    cargo: cargo,
+                    quantidade: quantidade
+                })
+            });
+
+            const dados = await response.json();
+
+            if (!response.ok) {
+                resultadoEl.innerHTML = `<span style="color:red;">${dados.erro || "Erro ao realizar sorteio."}</span>`;
+                return;
+            }
+
+            resultadoEl.innerHTML = `
+                ${dados.sorteados.map((p, i) => `
+                    <div style="margin-bottom: 14px;">
+                        <strong>${i + 1}º Sorteado: ${p.nome}</strong><br>
+                        <span>${p.cargo}</span><br>
+                        <span class="muted">${p.municipio || "-"} / ${p.estado || "-"}</span><br>
+                        <span class="muted">${p.telefone || "-"}</span>
+                    </div>
+                `).join("")}
+            `;
+        }
+
+        btnAtualizar.addEventListener("click", carregarParticipantes);
+        btnSortear.addEventListener("click", realizarSorteio);
+        cargoEl.addEventListener("change", carregarParticipantes);
+        btnSortearAleatorio.addEventListener("click", sortearAleatorio);
+
+        carregarParticipantes();
+    </script>
+</body>
+</html>
