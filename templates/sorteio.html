@@ -1,257 +1,126 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!doctype html>
+<html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página de Sorteio</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            margin: 0;
-            padding: 0;
-            color: #1f2937;
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sorteio</title>
 
-        .container {
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 20px;
-        }
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
-
-        h1, h2 {
-            margin-top: 0;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        select, input, button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #d1d5db;
-            font-size: 16px;
-            box-sizing: border-box;
-            margin-bottom: 16px;
-        }
-
-        button {
-            background: #2563eb;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background: #1d4ed8;
-        }
-
-        .resultado {
-            background: #eff6ff;
-            border: 2px dashed #93c5fd;
-            border-radius: 12px;
-            padding: 20px;
-            min-height: 120px;
-        }
-
-        .participante {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .participante:last-child {
-            border-bottom: none;
-        }
-
-        .muted {
-            color: #6b7280;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .small-btn {
-            width: auto;
-            padding: 10px 14px;
-            text-decoration: none;
-            background: #111827;
-            color: white;
-            border-radius: 10px;
-            display: inline-block;
-        }
-
-        @media (max-width: 800px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="topbar">
-            <h1>🎉 Painel de Sorteio</h1>
-            <a href="/admin" class="small-btn">Voltar ao admin</a>
-        </div>
-
-        <div class="grid">
-            <div class="card">
-                <h2>Configurações do sorteio</h2>
-
-                <label for="cargo">Filtrar por cargo</label>
-                <select id="cargo">
-                    <option value="">Todos os cargos</option>
-                    {% for cargo in cargos %}
-                        <option value="{{ cargo }}">{{ cargo }}</option>
-                    {% endfor %}
-                </select>
-
-                <label for="quantidade">Quantidade de sorteados</label>
-               <input type="number" id="quantidade" value="1" min="1">
-
-               <button id="btnAtualizar">Atualizar participantes</button>
-               <button id="btnSortear">Realizar sorteio 2</button>
-               <button id="btnSortearAleatorio">Sorteio Roleta 1</button>
-
-                <p><strong>Total de participantes encontrados:</strong> <span id="totalParticipantes">0</span></p>
-            </div>
-
-            <div class="card">
-                <h2>Resultado</h2>
-                <div id="resultado" class="resultado">
-                    <span class="muted">Nenhum sorteio realizado ainda.</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Participantes encontrados</h2>
-            <div id="listaParticipantes">
-                <span class="muted">Carregando participantes...</span>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const cargoEl = document.getElementById("cargo");
-        const quantidadeEl = document.getElementById("quantidade");
-        const totalParticipantesEl = document.getElementById("totalParticipantes");
-        const listaParticipantesEl = document.getElementById("listaParticipantes");
-        const resultadoEl = document.getElementById("resultado");
-        const btnAtualizar = document.getElementById("btnAtualizar");
-        const btnSortear = document.getElementById("btnSortear");
-        const btnSortearAleatorio = document.getElementById("btnSortearAleatorio");
-
-
-        async function carregarParticipantes() {
-            const cargo = cargoEl.value;
-            let url = "/api/participantes";
-
-            if (cargo) {
-                url += `?cargo=${encodeURIComponent(cargo)}`;
-            }
-
-            const response = await fetch(url);
-            const dados = await response.json();
-
-            totalParticipantesEl.textContent = dados.length;
-
-            if (!dados.length) {
-                listaParticipantesEl.innerHTML = '<span class="muted">Nenhum participante encontrado.</span>';
-                return;
-            }
-
-            listaParticipantesEl.innerHTML = dados.map(p => `
-                <div class="participante">
-                    <strong>${p.nome}</strong><br>
-                    <span>${p.cargo}</span><br>
-                    <span class="muted">${p.municipio || "-"} / ${p.estado || "-"}</span><br>
-                    <span class="muted">${p.telefone || "-"}</span>
-                </div>
-            `).join("");
-        }
-
-async function sortearAleatorio() {
-
-    const response = await fetch("/sortear-aleatorio", {
-        method: "POST"
-    });
-
-    const dados = await response.json();
-
-    if (!response.ok) {
-        alert("Erro no sorteio");
-        return;
+  <style>
+    body {
+      background: #f4f7fb;
+      font-family: system-ui;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
 
-    // redireciona com ID
-    window.location.href = `/tela-sorteio/${dados.id}`;
-}
+    .card-form {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    }
 
-        async function realizarSorteio() {
-            const cargo = cargoEl.value;
-            const quantidade = parseInt(quantidadeEl.value || "1", 10);
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
 
-            const response = await fetch("/sortear-dme", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    cargo: cargo,
-                    quantidade: quantidade
-                })
-            });
+    .form-control, .form-select {
+      height: 48px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
 
-            const dados = await response.json();
+    .btn-submit {
+      height: 50px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
 
-            if (!response.ok) {
-                resultadoEl.innerHTML = `<span style="color:red;">${dados.erro || "Erro ao realizar sorteio."}</span>`;
-                return;
-            }
+    .countdown {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
 
-            resultadoEl.innerHTML = `
-                ${dados.sorteados.map((p, i) => `
-                    <div style="margin-bottom: 14px;">
-                        <strong>${i + 1}º Sorteado: ${p.nome}</strong><br>
-                        <span>${p.cargo}</span><br>
-                        <span class="muted">${p.municipio || "-"} / ${p.estado || "-"}</span><br>
-                        <span class="muted">${p.telefone || "-"}</span>
-                    </div>
-                `).join("")}
-            `;
-        }
+<body>
 
-        btnAtualizar.addEventListener("click", carregarParticipantes);
-        btnSortear.addEventListener("click", realizarSorteio);
-        cargoEl.addEventListener("change", carregarParticipantes);
-        btnSortearAleatorio.addEventListener("click", sortearAleatorio);
+  <div class="card-form">
 
-        carregarParticipantes();
-    </script>
+    <h1>Participar do sorteio</h1>
+
+    <form method="POST">
+
+      <input type="text" name="name" class="form-control" placeholder="Nome completo" required>
+
+      <input type="tel" name="telefone" class="form-control" placeholder="Telefone" required>
+
+      <select name="estado" class="form-select" required>
+        <option value="">Estado</option>
+        <option>SP</option>
+        <option>RJ</option>
+        <option>MG</option>
+      </select>
+
+      <input type="text" name="municipio" class="form-control" placeholder="Município" required>
+
+      <select name="cargo" class="form-select" required>
+        <option value="">Cargo</option>
+        <option>Prefeito</option>
+        <option>Secretário</option>
+        <option>Professor</option>
+        <option>Outro</option>
+      </select>
+
+      <div class="d-grid mt-2">
+        <button type="submit" class="btn btn-primary btn-submit">
+          Participar
+        </button>
+      </div>
+
+      <div id="countdown" class="countdown">
+        Tempo: 03:00
+      </div>
+
+    </form>
+
+  </div>
+
+  <script>
+    let tempo = 180;
+    const el = document.getElementById("countdown");
+
+    function update() {
+      const m = String(Math.floor(tempo / 60)).padStart(2, '0');
+      const s = String(tempo % 60).padStart(2, '0');
+
+      el.textContent = `Tempo: ${m}:${s}`;
+
+      if (tempo <= 0) {
+        el.textContent = "Encerrado";
+        el.style.color = "#dc2626";
+        return;
+      }
+
+      tempo--;
+    }
+
+    update();
+    setInterval(update, 1000);
+  </script>
+
 </body>
+
 </html>

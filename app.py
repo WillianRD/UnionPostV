@@ -559,6 +559,24 @@ def api_sorteio(id):
 
     return jsonify(json.loads(row["dados"]))
 
+@app.route("/sorteio-tela", methods=["GET", "POST"])
+def sorteioNoTelao():
+    mensagem = None
+
+    if request.method == "POST":
+        nome = request.form.get("name")
+        telefone = request.form.get("telefone")
+        estado = request.form.get("estado")
+        municipio = request.form.get("municipio")
+        cargo = request.form.get("cargo")
+
+        # salvar no banco
+        # ...
+
+        mensagem = "Cadastro realizado com sucesso! Você já está participando do sorteio."
+
+    return render_template("sorteio.html", mensagem=mensagem)
+
 @app.route("/buscar-participantes", methods=["GET"])
 @login_required
 def buscar_participantes():
