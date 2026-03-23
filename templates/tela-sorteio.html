@@ -1,650 +1,784 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sorteio UNDIME</title>
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteio UNDIME</title>
 
-<style>
-    :root{
-        --bg1:#081120;
-        --bg2:#102745;
-        --card:rgba(255,255,255,0.08);
-        --card-border:rgba(255,255,255,0.12);
-        --text:#ffffff;
-        --muted:#c8d4e8;
-        --primary:#2ec5ff;
-        --primary2:#2d7dff;
-        --accent:#ffd54a;
-        --success:#47e38c;
-        --danger:#ff8a8a;
-    }
-
-    *{
-        box-sizing:border-box;
-    }
-
-    body{
-        margin:0;
-        min-height:100vh;
-        font-family:Arial, Helvetica, sans-serif;
-        color:var(--text);
-        background:
-            radial-gradient(circle at top left, rgba(46,197,255,0.20), transparent 25%),
-            radial-gradient(circle at top right, rgba(255,213,74,0.12), transparent 22%),
-            linear-gradient(135deg,var(--bg1),var(--bg2));
-        overflow:hidden;
-    }
-
-    .screen{
-        min-height:100vh;
-        padding:28px;
-        display:grid;
-        grid-template-rows:auto 1fr auto;
-        gap:22px;
-    }
-
-    .hero{
-        border:1px solid var(--card-border);
-        background:linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
-        border-radius:28px;
-        padding:26px 30px;
-        box-shadow:0 18px 50px rgba(0,0,0,0.25);
-        position:relative;
-        overflow:hidden;
-    }
-
-    .hero::before{
-        content:"";
-        position:absolute;
-        width:260px;
-        height:260px;
-        border-radius:999px;
-        background:rgba(46,197,255,0.14);
-        right:-80px;
-        top:-90px;
-        filter:blur(8px);
-    }
-
-    .hero::after{
-        content:"";
-        position:absolute;
-        width:180px;
-        height:180px;
-        border-radius:999px;
-        background:rgba(255,213,74,0.10);
-        left:-40px;
-        bottom:-60px;
-        filter:blur(8px);
-    }
-
-    .badge{
-        position:relative;
-        z-index:1;
-        display:inline-block;
-        padding:10px 16px;
-        border-radius:999px;
-        background:rgba(255,255,255,0.10);
-        border:1px solid rgba(255,255,255,0.12);
-        color:var(--accent);
-        font-weight:bold;
-        letter-spacing:.2px;
-        margin-bottom:12px;
-    }
-
-    .hero h1{
-        position:relative;
-        z-index:1;
-        margin:0;
-        font-size:clamp(34px, 4vw, 64px);
-        line-height:1.05;
-    }
-
-    .hero p{
-        position:relative;
-        z-index:1;
-        margin:10px 0 0;
-        color:var(--muted);
-        font-size:clamp(16px, 1.3vw, 22px);
-    }
-
-    .main{
-        display:grid;
-        grid-template-columns: 360px 1fr;
-        gap:22px;
-        min-height:0;
-    }
-
-    .side,
-    .center{
-        border:1px solid var(--card-border);
-        background:var(--card);
-        border-radius:28px;
-        box-shadow:0 18px 50px rgba(0,0,0,0.22);
-    }
-
-    .side{
-        padding:24px;
-        display:flex;
-        flex-direction:column;
-        gap:18px;
-    }
-
-    .metric{
-        padding:18px 20px;
-        border-radius:20px;
-        background:rgba(255,255,255,0.07);
-        border:1px solid rgba(255,255,255,0.10);
-    }
-
-    .metric small{
-        display:block;
-        color:var(--muted);
-        font-size:15px;
-        margin-bottom:6px;
-    }
-
-    .metric strong{
-        display:block;
-        font-size:clamp(28px, 2.3vw, 40px);
-    }
-
-    .timerBox{
-        padding:24px;
-        border-radius:24px;
-        text-align:center;
-        background:linear-gradient(135deg,var(--primary),var(--primary2));
-        box-shadow:0 12px 24px rgba(45,125,255,0.28);
-    }
-
-    .timerBox span{
-        display:block;
-        font-size:16px;
-        color:#eef7ff;
-        margin-bottom:8px;
-    }
-
-    .timer{
-        font-size:clamp(52px, 5vw, 86px);
-        font-weight:bold;
-        line-height:1;
-    }
-
-    .legend{
-        color:var(--muted);
-        font-size:15px;
-        line-height:1.6;
-    }
-
-    .center{
-        position:relative;
-        overflow:hidden;
-        padding:28px;
-        display:grid;
-        grid-template-rows:auto 1fr auto;
-        gap:18px;
-    }
-
-    .title-row{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:16px;
-        flex-wrap:wrap;
-    }
-
-    .title-row h2{
-        margin:0;
-        font-size:clamp(24px, 2.2vw, 40px);
-    }
-
-    .status{
-        padding:10px 16px;
-        border-radius:999px;
-        background:rgba(255,255,255,0.08);
-        border:1px solid rgba(255,255,255,0.12);
-        color:var(--accent);
-        font-weight:bold;
-    }
-
-    .slot-area{
-        position:relative;
-        min-height:0;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-    }
-
-    .slot-frame{
-        width:min(100%, 980px);
-        height:360px;
-        border-radius:28px;
-        position:relative;
-        overflow:hidden;
-        background:
-            radial-gradient(circle at top, rgba(46,197,255,0.12), transparent 35%),
-            rgba(255,255,255,0.05);
-        border:1px solid rgba(255,255,255,0.12);
-        box-shadow:inset 0 0 40px rgba(255,255,255,0.04);
-    }
-
-    .slot-highlight{
-        position:absolute;
-        left:22px;
-        right:22px;
-        top:50%;
-        transform:translateY(-50%);
-        height:90px;
-        border-radius:22px;
-        background:rgba(255,255,255,0.10);
-        border:2px solid rgba(255,213,74,0.70);
-        box-shadow:0 0 30px rgba(255,213,74,0.18);
-        z-index:3;
-        pointer-events:none;
-    }
-
-    .highlight {
-    position: absolute;
-    top: 115px;
-    width: 100%;
-    height: 90px;
-    border: 2px solid #22c55e;
-    pointer-events: none;
-}
-    .slot-list{
-        position:absolute;
-        left:0;
-        right:0;
-        top:0;
-        will-change:transform;
-        padding:20px 22px;
-    }
-
-    .slot-item{
-        height:90px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        padding:0 20px;
-        margin:0 0 10px;
-        border-radius:22px;
-        font-size:clamp(22px, 2.4vw, 44px);
-        font-weight:bold;
-        text-align:center;
-        background:rgba(255,255,255,0.05);
-        border:1px solid rgba(255,255,255,0.08);
-        color:#eef6ff;
-        letter-spacing:.2px;
-    }
-
-    .fade-top,
-    .fade-bottom{
-        position:absolute;
-        left:0;
-        right:0;
-        height:84px;
-        z-index:4;
-        pointer-events:none;
-    }
-
-    .fade-top{
-        top:0;
-        background:linear-gradient(to bottom, rgba(10,18,33,0.95), rgba(10,18,33,0));
-    }
-
-    .fade-bottom{
-        bottom:0;
-        background:linear-gradient(to top, rgba(10,18,33,0.95), rgba(10,18,33,0));
-    }
-
-    .winner-panel{
-        display:none;
-        margin-top:4px;
-        padding:24px;
-        border-radius:24px;
-        background:rgba(255,255,255,0.08);
-        border:1px solid rgba(255,255,255,0.12);
-        text-align:center;
-        animation:pop .45s ease;
-    }
-
-    .winner-panel.show{
-        display:block;
-    }
-
-    .winner-title{
-        color:var(--accent);
-        font-weight:bold;
-        font-size:18px;
-        letter-spacing:.6px;
-        margin-bottom:12px;
-    }
-
-    .winner-name{
-        font-size:clamp(34px, 3.8vw, 64px);
-        font-weight:bold;
-        color:var(--success);
-        margin-bottom:10px;
-    }
-
-    .winner-meta{
-        color:var(--muted);
-        font-size:clamp(16px, 1.4vw, 22px);
-        line-height:1.7;
-    }
-
-    .footer{
-        text-align:center;
-        color:var(--muted);
-        font-size:14px;
-    }
-
-    @keyframes pop{
-        from{
-            transform:scale(.96);
-            opacity:0;
-        }
-        to{
-            transform:scale(1);
-            opacity:1;
-        }
-    }
-
-    @media (max-width: 1100px){
-        .main{
-            grid-template-columns:1fr;
+    <style>
+        :root{
+            --bg1:#081120;
+            --bg2:#102745;
+            --card:rgba(255,255,255,0.08);
+            --card-border:rgba(255,255,255,0.12);
+            --text:#ffffff;
+            --muted:#c8d4e8;
+            --primary:#2ec5ff;
+            --primary2:#2d7dff;
+            --accent:#ffd54a;
+            --success:#47e38c;
+            --danger:#ff8a8a;
         }
 
-        .slot-frame{
-            height:320px;
+        *{
+            box-sizing:border-box;
         }
-    }
 
-    @media (max-width: 700px){
+        body{
+            margin:0;
+            min-height:100vh;
+            font-family:Arial, Helvetica, sans-serif;
+            color:var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(46,197,255,0.20), transparent 25%),
+                radial-gradient(circle at top right, rgba(255,213,74,0.12), transparent 22%),
+                linear-gradient(135deg,var(--bg1),var(--bg2));
+            overflow:hidden;
+        }
+
         .screen{
-            padding:14px;
+            min-height:100vh;
+            padding:28px;
+            display:grid;
+            grid-template-rows:auto 1fr auto;
+            gap:22px;
         }
 
-        .hero,
+        .hero{
+            border:1px solid var(--card-border);
+            background:linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
+            border-radius:28px;
+            padding:26px 30px;
+            box-shadow:0 18px 50px rgba(0,0,0,0.25);
+            position:relative;
+            overflow:hidden;
+        }
+
+        .hero::before{
+            content:"";
+            position:absolute;
+            width:260px;
+            height:260px;
+            border-radius:999px;
+            background:rgba(46,197,255,0.14);
+            right:-80px;
+            top:-90px;
+            filter:blur(8px);
+        }
+
+        .hero::after{
+            content:"";
+            position:absolute;
+            width:180px;
+            height:180px;
+            border-radius:999px;
+            background:rgba(255,213,74,0.10);
+            left:-40px;
+            bottom:-60px;
+            filter:blur(8px);
+        }
+
+        .badge{
+            position:relative;
+            z-index:1;
+            display:inline-block;
+            padding:10px 16px;
+            border-radius:999px;
+            background:rgba(255,255,255,0.10);
+            border:1px solid rgba(255,255,255,0.12);
+            color:var(--accent);
+            font-weight:bold;
+            letter-spacing:.2px;
+            margin-bottom:12px;
+        }
+
+        .hero h1{
+            position:relative;
+            z-index:1;
+            margin:0;
+            font-size:clamp(34px, 4vw, 64px);
+            line-height:1.05;
+        }
+
+        .hero p{
+            position:relative;
+            z-index:1;
+            margin:10px 0 0;
+            color:var(--muted);
+            font-size:clamp(16px, 1.3vw, 22px);
+        }
+
+        .main{
+            display:grid;
+            grid-template-columns: 360px 1fr;
+            gap:22px;
+            min-height:0;
+        }
+
         .side,
         .center{
+            border:1px solid var(--card-border);
+            background:var(--card);
+            border-radius:28px;
+            box-shadow:0 18px 50px rgba(0,0,0,0.22);
+        }
+
+        .side{
+            padding:24px;
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+        }
+
+        .metric{
+            padding:18px 20px;
             border-radius:20px;
+            background:rgba(255,255,255,0.07);
+            border:1px solid rgba(255,255,255,0.10);
+        }
+
+        .metric small{
+            display:block;
+            color:var(--muted);
+            font-size:15px;
+            margin-bottom:6px;
+        }
+
+        .metric strong{
+            display:block;
+            font-size:clamp(28px, 2.3vw, 40px);
+        }
+
+        .timerBox{
+            padding:24px;
+            border-radius:24px;
+            text-align:center;
+            background:linear-gradient(135deg,var(--primary),var(--primary2));
+            box-shadow:0 12px 24px rgba(45,125,255,0.28);
+        }
+
+        .timerBox span{
+            display:block;
+            font-size:16px;
+            color:#eef7ff;
+            margin-bottom:8px;
+        }
+
+        .timer{
+            font-size:clamp(52px, 5vw, 86px);
+            font-weight:bold;
+            line-height:1;
+        }
+
+        .legend{
+            color:var(--muted);
+            font-size:15px;
+            line-height:1.6;
+        }
+
+        .center{
+            position:relative;
+            overflow:hidden;
+            padding:28px;
+            display:grid;
+            grid-template-rows:auto 1fr auto;
+            gap:18px;
+        }
+
+        .title-row{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:16px;
+            flex-wrap:wrap;
+        }
+
+        .title-row h2{
+            margin:0;
+            font-size:clamp(24px, 2.2vw, 40px);
+        }
+
+        .status{
+            padding:10px 16px;
+            border-radius:999px;
+            background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.12);
+            color:var(--accent);
+            font-weight:bold;
+        }
+
+        .slot-area{
+            position:relative;
+            min-height:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
         }
 
         .slot-frame{
-            height:280px;
+            width:min(100%, 980px);
+            height:360px;
+            border-radius:28px;
+            position:relative;
+            overflow:hidden;
+            background:
+                radial-gradient(circle at top, rgba(46,197,255,0.12), transparent 35%),
+                rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.12);
+            box-shadow:inset 0 0 40px rgba(255,255,255,0.04);
         }
 
-        .slot-item{
-            font-size:22px;
+        .slot-highlight{
+            position:absolute;
+            left:22px;
+            right:22px;
+            top:50%;
+            transform:translateY(-50%);
+            height:90px;
+            border-radius:22px;
+            background:rgba(255,255,255,0.10);
+            border:2px solid rgba(255,213,74,0.70);
+            box-shadow:0 0 30px rgba(255,213,74,0.18);
+            z-index:3;
+            pointer-events:none;
+        }
+
+        .highlight {
+        position: absolute;
+        top: 115px;
+        width: 100%;
+        height: 90px;
+        border: 2px solid #22c55e;
+        pointer-events: none;
+    }
+        .slot-list{
+            position:absolute;
+            left:0;
+            right:0;
+            top:0;
+            will-change:transform;
+            padding:20px 22px;
+        }
+.slot-item {
+    height: 90px;
+    margin: 0;
+    padding: 0 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+        .fade-top,
+        .fade-bottom{
+            position:absolute;
+            left:0;
+            right:0;
+            height:84px;
+            z-index:4;
+            pointer-events:none;
+        }
+
+        .fade-top{
+            top:0;
+            background:linear-gradient(to bottom, rgba(10,18,33,0.95), rgba(10,18,33,0));
+        }
+
+        .fade-bottom{
+            bottom:0;
+            background:linear-gradient(to top, rgba(10,18,33,0.95), rgba(10,18,33,0));
+        }
+
+        .winner-panel{
+            display:none;
+            margin-top:4px;
+            padding:24px;
+            border-radius:24px;
+            background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.12);
+            text-align:center;
+            animation:pop .45s ease;
+        }
+
+        .winner-panel.show{
+            display:block;
+        }
+
+        .winner-title{
+            color:var(--accent);
+            font-weight:bold;
+            font-size:18px;
+            letter-spacing:.6px;
+            margin-bottom:12px;
+        }
+
+        .winner-name{
+            font-size:clamp(34px, 3.8vw, 64px);
+            font-weight:bold;
+            color:var(--success);
+            margin-bottom:10px;
+        }
+
+        .winner-meta{
+            color:var(--muted);
+            font-size:clamp(16px, 1.4vw, 22px);
+            line-height:1.7;
+        }
+
+        .footer{
+            text-align:center;
+            color:var(--muted);
+            font-size:14px;
+        }
+
+        @keyframes pop{
+            from{
+                transform:scale(.96);
+                opacity:0;
+            }
+            to{
+                transform:scale(1);
+                opacity:1;
+            }
+        }
+
+        @media (max-width: 1100px){
+            .main{
+                grid-template-columns:1fr;
+            }
+
+            .slot-frame{
+                height:320px;
+            }
+        }
+
+        @media (max-width: 700px){
+            .screen{
+                padding:14px;
+            }
+
+            .hero,
+            .side,
+            .center{
+                border-radius:20px;
+            }
+
+            .slot-frame{
+                height:280px;
+            }
+
+            .slot-item{
+                font-size:22px;
+            }
+        }
+        .main {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+    }
+
+    .side {
+        flex: 1 1 300px; /* cresce até 1fr, mínimo 300px */
+    }
+
+    .center {
+        flex: 2 1 500px; /* cresce até 2fr, mínimo 500px */
+    }
+
+    .slot-frame {
+        width: 100%;
+        max-width: 980px;
+        height: clamp(200px, 40vh, 360px);
+    }
+
+    .slot-item {
+        height: clamp(60px, 12vh, 90px);
+        font-size: clamp(16px, 4vw, 44px);
+    }
+    @media (max-width: 800px){
+        .main {
+            flex-direction: column;
+        }
+        .slot-frame {
+            height: clamp(180px, 30vh, 320px);
         }
     }
-</style>
-</head>
-<body>
 
-<div class="screen">
-    <section class="hero">
-        <div class="badge">🎓 Evento UNDIME • Modo Telão</div>
-        <h1>Sorteio Especial</h1>
-        <p>Apresentação premium com rolagem dinâmica de nomes e revelação final do participante sorteado.</p>
-    </section>
+    @media (max-width: 500px){
+        .hero, .side, .center {
+            padding: 16px;
+            border-radius: 16px;
+        }
+        .slot-frame {
+            height: clamp(150px, 25vh, 250px);
+        }
+    }
+    /* Responsividade para telas pequenas sem quebrar estrutura */
+    @media (max-width: 1100px) {
+        .main {
+            flex-direction: column; /* coluna para celulares e tablets */
+            gap: 18px;
+        }
 
-    <section class="main">
-        <aside class="side">
-            <div class="metric">
-                <small>Total de participantes</small>
-                <strong id="totalParticipantes">0</strong>
-            </div>
+        .side, .center {
+            width: 100%;
+        }
 
-            <div class="metric">
-                <small>Status</small>
-                <strong id="statusTexto" style="font-size:24px;">Preparando</strong>
-            </div>
+        .slot-frame {
+            height: clamp(220px, 35vh, 360px); /* ajustar altura do painel */
+        }
 
-            <div class="timerBox">
-                <span>Revelação em</span>
-                <div class="timer" id="timer">5</div>
-            </div>
+        .slot-item {
+            font-size: clamp(16px, 4vw, 44px);
+            height: clamp(60px, 10vh, 90px);
+        }
+    }
 
-            <div class="legend">
-                Os nomes passam no painel central em efeito cassino. Quando o contador zerar, o sistema desacelera e revela o participante sorteado.
-            </div>
-        </aside>
+    @media (max-width: 700px) {
+        .screen {
+            padding: 14px;
+        }
 
-        <div class="center">
-            <div class="title-row">
-                <h2>Participantes na rolagem</h2>
-                <div class="status" id="statusBadge">Carregando nomes</div>
-            </div>
+        .hero, .side, .center {
+            padding: 16px;
+            border-radius: 20px;
+        }
 
-            <div class="slot-area">
-                <div class="slot-frame">
-                    <div class="fade-top"></div>
-                    <div class="fade-bottom"></div>
-                    <div class="slot-highlight"></div>
-                    <div class="slot-list" id="slotList"></div>
+        .slot-frame {
+            height: clamp(180px, 30vh, 280px);
+        }
+
+        .slot-item {
+            font-size: clamp(14px, 5vw, 36px);
+            height: clamp(50px, 8vh, 80px);
+        }
+
+        .title-row h2 {
+            font-size: clamp(20px, 5vw, 28px);
+        }
+
+        .timer {
+            font-size: clamp(40px, 10vw, 70px);
+        }
+    }
+
+    @media (max-width: 500px) {
+        .hero, .side, .center {
+            padding: 12px;
+            border-radius: 16px;
+        }
+
+        .slot-frame {
+            height: clamp(150px, 25vh, 250px);
+        }
+
+        .slot-item {
+            font-size: clamp(12px, 5vw, 30px);
+            height: clamp(45px, 7vh, 70px);
+        }
+
+        .timer {
+            font-size: clamp(32px, 10vw, 60px);
+        }
+
+        .legend {
+            font-size: 13px;
+        }
+
+        .badge {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+    }
+
+    </style>
+    </head>
+    <body>
+
+    <div class="screen">
+        <section class="hero">
+            <div class="badge">🎓 Evento UNDIME • Modo Telão</div>
+            <h1>Sorteio Especial</h1>
+            <p>Apresentação premium com rolagem dinâmica de nomes e revelação final do participante sorteado.</p>
+        </section>
+
+        <section class="main">
+            <aside class="side">
+                <div class="metric">
+                    <small>Total de participantes</small>
+                    <strong id="totalParticipantes">0</strong>
+                </div>
+
+                <div class="metric">
+                    <small>Status</small>
+                    <strong id="statusTexto" style="font-size:24px;">Preparando</strong>
+                </div>
+
+                <div class="timerBox">
+                    <span>Revelação em</span>
+                    <div class="timer" id="timer">5</div>
+                </div>
+
+                <div class="legend">
+                    Os nomes passam no painel central em efeito cassino. Quando o contador zerar, o sistema desacelera e revela o participante sorteado.
+                </div>
+            </aside>
+
+            <div class="center">
+                <div class="title-row">
+                    <h2>Participantes na rolagem</h2>
+                    <div class="status" id="statusBadge">Carregando nomes</div>
+                </div>
+
+                <div class="slot-area">
+                    <div class="slot-frame">
+                        <div class="fade-top"></div>
+                        <div class="fade-bottom"></div>
+                        <div class="slot-highlight"></div>
+                        <div class="slot-list" id="slotList"></div>
+                    </div>
+                </div>
+
+                <div class="winner-panel" id="winnerPanel">
+                    <div class="winner-title">PARTICIPANTE SORTEADO</div>
+                    <div class="winner-name" id="winnerName">-</div>
+                    <div class="winner-meta" id="winnerMeta">-</div>
                 </div>
             </div>
+        </section>
 
-            <div class="winner-panel" id="winnerPanel">
-                <div class="winner-title">PARTICIPANTE SORTEADO</div>
-                <div class="winner-name" id="winnerName">-</div>
-                <div class="winner-meta" id="winnerMeta">-</div>
-            </div>
+        <div class="footer">
+            UnionBoard • Tela de sorteio para eventos e apresentações
         </div>
-    </section>
-
-    <div class="footer">
-        UnionBoard • Tela de sorteio para eventos e apresentações
     </div>
-</div>
-</body>
-<script>
- const idSorteio = parseInt(document.body.dataset.idSorteio, 10);
 
-let participantes = [];
-let sorteadoFinal = null;
-let rollingList = [];
+    <body data-id-sorteio="{{ id_sorteio }}">
 
-let offset = 0;
-let velocidade = 25;
-let animando = true;
+    </body>
+    <script>
+    const idSorteio = parseInt(document.body.dataset.idSorteio, 10);
 
-const ITEM_HEIGHT = 90;
-const REPETICOES = 10;
+    let participantes = [];
+    let sorteadoFinal = null;
+    let rollingList = [];
 
-const slotList = document.getElementById("slotList");
-const totalParticipantesEl = document.getElementById("totalParticipantes");
-const timerEl = document.getElementById("timer");
-const winnerPanelEl = document.getElementById("winnerPanel");
-const winnerNameEl = document.getElementById("winnerName");
-const winnerMetaEl = document.getElementById("winnerMeta");
+    let offset = 0;
+    let velocidade = 25;
+    let animando = true;
 
-async function carregarDados() {
-    try {
-        const res = await fetch("/api/sorteio/" + idSorteio);
-        const data = await res.json();
+    let ITEM_HEIGHT = 90;
+    const REPETICOES = 10;
 
-        if (data.erro) {
-            slotList.innerHTML = `<div class="slot-item">${data.erro}</div>`;
-            return;
-        }
+    const slotList = document.getElementById("slotList");
+    const totalParticipantesEl = document.getElementById("totalParticipantes");
+    const timerEl = document.getElementById("timer");
+    const winnerPanelEl = document.getElementById("winnerPanel");
+    const winnerNameEl = document.getElementById("winnerName");
+    const winnerMetaEl = document.getElementById("winnerMeta");
 
-        participantes = data.participantes || [];
-        sorteadoFinal = data.sorteado || null;
+    async function carregarDados() {
+        try {
+            const res = await fetch("/api/sorteio/" + idSorteio);
+            const data = await res.json();
 
-        if (!participantes.length || !sorteadoFinal) {
-            slotList.innerHTML = `<div class="slot-item">Dados do sorteio não encontrados</div>`;
-            return;
-        }
+            if (data.erro) {
+                slotList.innerHTML = `<div class="slot-item">${data.erro}</div>`;
+                return;
+            }
 
-        totalParticipantesEl.innerText = participantes.length;
+            participantes = data.participantes || [];
+            sorteadoFinal = data.sorteado || null;
 
-        rollingList = [];
-        for (let i = 0; i < REPETICOES; i++) {
-            rollingList.push(...participantes);
-        }
+            if (!participantes.length || !sorteadoFinal) {
+                slotList.innerHTML = `<div class="slot-item">Dados do sorteio não encontrados</div>`;
+                return;
+            }
 
-        slotList.innerHTML = rollingList.map(p => `
-            <div class="slot-item">${p.nome}</div>
-        `).join("");
+            totalParticipantesEl.innerText = participantes.length;
 
-        animar();
-        iniciarTimer();
-    } catch (e) {
-        console.error(e);
-        slotList.innerHTML = `<div class="slot-item">Erro ao carregar sorteio</div>`;
-    }
+            rollingList = [];
+            for (let i = 0; i < REPETICOES; i++) {
+                rollingList.push(...participantes);
+            }
+
+            slotList.innerHTML = rollingList.map(p => `
+    <div class="slot-item">${p.nome}</div>
+`).join("");
+
+const primeiroItem = document.querySelector(".slot-item");
+if (primeiroItem) {
+    ITEM_HEIGHT = primeiroItem.getBoundingClientRect().height;
 }
 
-function animar() {
-    if (!animando) return;
-
-    offset -= velocidade;
-
-    const metadeListaPx = (rollingList.length * ITEM_HEIGHT) / 2;
-    if (Math.abs(offset) >= metadeListaPx) {
-        offset = 0;
+            animar();
+            iniciarTimer();
+        } catch (e) {
+            console.error(e);
+            slotList.innerHTML = `<div class="slot-item">Erro ao carregar sorteio</div>`;
+        }
     }
 
-    slotList.style.transform = `translateY(${offset}px)`;
-    requestAnimationFrame(animar);
-}
+    function animar() {
+        if (!animando) return;
 
-function iniciarTimer() {
-    let tempo = 5;
-    timerEl.innerText = tempo;
+        offset -= velocidade;
 
-    const intervalo = setInterval(() => {
-        tempo--;
+        const metadeListaPx = (rollingList.length * ITEM_HEIGHT) / 2;
+        if (Math.abs(offset) >= metadeListaPx) {
+            offset = 0;
+        }
+
+        slotList.style.transform = `translateY(${offset}px)`;
+        requestAnimationFrame(animar);
+    }
+
+    function iniciarTimer() {
+        let tempo = 5;
         timerEl.innerText = tempo;
 
-        if (tempo <= 0) {
-            clearInterval(intervalo);
-            desacelerar();
-        }
-    }, 1000);
-}
+        const intervalo = setInterval(() => {
+            tempo--;
+            timerEl.innerText = tempo;
 
-function desacelerar() {
-    let passos = 0;
+            if (tempo <= 0) {
+                clearInterval(intervalo);
+                desacelerar();
+            }
+        }, 1000);
+    }
 
-    const intervalo = setInterval(() => {
-        velocidade = Math.max(4, velocidade - 1.4);
-        passos++;
+    function desacelerar() {
+        let passos = 0;
 
-        if (passos >= 18) {
-            clearInterval(intervalo);
-            alinharNoSorteado();
-        }
-    }, 120);
-}
+        const intervalo = setInterval(() => {
+            velocidade = Math.max(4, velocidade - 1.4);
+            passos++;
+
+            if (passos >= 18) {
+                clearInterval(intervalo);
+                alinharNoSorteado();
+            }
+        }, 120);
+    }
 
 function alinharNoSorteado() {
     animando = false;
 
     const nomeSorteado = (sorteadoFinal.nome || "").trim().toLowerCase();
+    const items = Array.from(document.querySelectorAll(".slot-item"));
 
-    const indices = rollingList
-        .map((p, i) => ({
-            index: i,
-            nome: (p.nome || "").trim().toLowerCase()
-        }))
-        .filter(p => p.nome === nomeSorteado)
-        .map(p => p.index);
-
-    if (!indices.length) {
-        console.log("Não encontrou o sorteado na lista");
+    if (!items.length) {
         mostrarResultado();
         return;
     }
 
     const slotFrame = document.querySelector(".slot-frame");
-    const highlight = document.querySelector(".highlight");
+    const highlight = document.querySelector(".slot-highlight");
 
     const frameRect = slotFrame.getBoundingClientRect();
     const highlightRect = highlight.getBoundingClientRect();
 
-    const centroReal = (highlightRect.top - frameRect.top) + (highlightRect.height / 2);
+    const centroHighlight = (highlightRect.top - frameRect.top) + (highlightRect.height / 2);
 
-    const posicaoAtual = Math.abs(offset) / ITEM_HEIGHT;
+    // pega todos os elementos que têm o nome sorteado
+    const candidatos = items
+        .map((el, index) => ({
+            el,
+            index,
+            nome: (el.innerText || "").trim().toLowerCase()
+        }))
+        .filter(item => item.nome === nomeSorteado);
 
-    const indiceEscolhido = indices.reduce((maisProximo, atual) => {
-        return Math.abs(atual - posicaoAtual) < Math.abs(maisProximo - posicaoAtual)
-            ? atual
-            : maisProximo;
-    });
+    if (!candidatos.length) {
+        mostrarResultado();
+        return;
+    }
 
-    const targetOffset = centroReal - (indiceEscolhido * ITEM_HEIGHT) - (ITEM_HEIGHT / 2);
+    // escolhe o candidato mais próximo da posição atual da roleta
+    const posicaoAtual = Math.abs(offset);
+    let melhor = candidatos[0];
 
-    console.log("Nome sorteado:", nomeSorteado);
-    console.log("Índice escolhido:", indiceEscolhido);
-    console.log("Target offset:", targetOffset);
+    for (const candidato of candidatos) {
+        const topoItem = candidato.index * ITEM_HEIGHT;
+        const distancia = Math.abs(topoItem - posicaoAtual);
+
+        const topoMelhor = melhor.index * ITEM_HEIGHT;
+        const melhorDistancia = Math.abs(topoMelhor - posicaoAtual);
+
+        if (distancia < melhorDistancia) {
+            melhor = candidato;
+        }
+    }
+
+    // calcula offset exato para centralizar esse item no highlight
+    const centroItem = (melhor.index * ITEM_HEIGHT) + (ITEM_HEIGHT / 2);
+    const targetOffset = centroHighlight - centroItem;
 
     animarAte(targetOffset, 900, mostrarResultado);
 }
 
-function animarAte(targetOffset, duracao, callback) {
-    const inicio = offset;
-    const diferenca = targetOffset - inicio;
-    const start = performance.now();
+    function animarAte(targetOffset, duracao, callback) {
+        const inicio = offset;
+        const diferenca = targetOffset - inicio;
+        const start = performance.now();
 
-    function frame(agora) {
-        const progresso = Math.min((agora - start) / duracao, 1);
-        const ease = 1 - Math.pow(1 - progresso, 3);
+        function frame(agora) {
+            const progresso = Math.min((agora - start) / duracao, 1);
+            const ease = 1 - Math.pow(1 - progresso, 3);
 
-        offset = inicio + diferenca * ease;
-        slotList.style.transform = `translateY(${offset}px)`;
-
-        if (progresso < 1) {
-            requestAnimationFrame(frame);
-        } else {
-            offset = targetOffset;
+            offset = inicio + diferenca * ease;
             slotList.style.transform = `translateY(${offset}px)`;
 
-            console.log("Animação finalizada");
-            if (typeof callback === "function") {
-                callback();
+            if (progresso < 1) {
+                requestAnimationFrame(frame);
+            } else {
+                offset = targetOffset;
+                slotList.style.transform = `translateY(${offset}px)`;
+
+                console.log("Animação finalizada");
+                if (typeof callback === "function") {
+                    callback();
+                }
             }
         }
+
+        requestAnimationFrame(frame);
     }
 
-    requestAnimationFrame(frame);
-}
+    function mostrarResultado() {
+        console.log("mostrarResultado foi chamada");
+        console.log("sorteadoFinal:", sorteadoFinal);
 
-function mostrarResultado() {
-    console.log("mostrarResultado foi chamada");
-    console.log("sorteadoFinal:", sorteadoFinal);
+        if (!sorteadoFinal) {
+            console.error("sorteadoFinal está vazio");
+            return;
+        }
 
-    if (!sorteadoFinal) {
-        console.error("sorteadoFinal está vazio");
-        return;
+        const winnerPanel = document.getElementById("winnerPanel");
+        const winnerName = document.getElementById("winnerName");
+        const winnerMeta = document.getElementById("winnerMeta");
+
+        if (!winnerPanel || !winnerName || !winnerMeta) {
+            console.error("Elementos do painel final não encontrados");
+            return;
+        }
+
+        winnerName.innerText = sorteadoFinal.nome || "-";
+        winnerMeta.innerHTML = `
+            <strong>Cargo:</strong> ${sorteadoFinal.cargo || "-"}<br>
+            <strong>Município:</strong> ${sorteadoFinal.municipio || "-"} - ${sorteadoFinal.estado || "-"}<br>
+            <strong>Telefone:</strong> ${sorteadoFinal.telefone || "-"}
+        `;
+
+        winnerPanel.classList.add("show");
     }
 
-    const winnerPanel = document.getElementById("winnerPanel");
-    const winnerName = document.getElementById("winnerName");
-    const winnerMeta = document.getElementById("winnerMeta");
+        winnerPanel.classList.add("show");
+    carregarDados();
 
-    if (!winnerPanel || !winnerName || !winnerMeta) {
-        console.error("Elementos do painel final não encontrados");
-        return;
-    }
+    </script>
 
-    winnerName.innerText = sorteadoFinal.nome || "-";
-    winnerMeta.innerHTML = `
-        <strong>Cargo:</strong> ${sorteadoFinal.cargo || "-"}<br>
-        <strong>Município:</strong> ${sorteadoFinal.municipio || "-"} - ${sorteadoFinal.estado || "-"}<br>
-        <strong>Telefone:</strong> ${sorteadoFinal.telefone || "-"}
-    `;
-
-    winnerPanel.classList.add("show");
-}
-
-    winnerPanel.classList.add("show");
-carregarDados();
-
-</script>
-
-</body>
-</html>
+    </body>
+    </html>
