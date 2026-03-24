@@ -335,6 +335,112 @@
         padding: 34px 28px;
       }
     }
+
+    .waiting {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0b1f3a;
+  color: white;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: #142a52;
+  padding: 20px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+/* ===== LOADING ===== */
+
+.waiting {
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loader {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255,255,255,0.2);
+  border-top: 5px solid #4fd1ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== ROLETA ===== */
+
+.slot-wrapper {
+  min-height: 250px;
+}
+
+.slot-mask {
+  height: 200px;
+  overflow: hidden;
+  border: 2px solid gold;
+  border-radius: 15px;
+  position: relative;
+}
+
+.slot-highlight {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  right: 10px;
+  height: 60px;
+  transform: translateY(-50%);
+  border: 2px solid gold;
+}
+
+.slot-list {
+  position: absolute;
+  width: 100%;
+}
+
+.slot-item {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
@@ -348,23 +454,24 @@
     </div>
 
     <div class="card">
-      <h2>Aguardando o sorteio</h2>
-      <img src="{{ url_for('static', filename='gif/loading.gif') }}" alt="Aguardando">
-      <div class="status-badge" id="statusBadge">Conectando</div>
+<div class="slot-wrapper">
 
-    </div>
-</div>
-        </div>
-        
-
-        <div id="slotArea" style="display:none;">
-          <div class="slot-mask">
-            <div class="slot-highlight"></div>
-            <div class="slot-list" id="slotList"></div>
-          </div>
+   <!-- LOADER -->
+      <div id="waitingBox" class="waiting">
+        <div class="loader-container">
+          <div class="loader"></div>
+          <p>Aguardando sorteio...</p>
         </div>
       </div>
-    </div>
+
+      <!-- ROLETA -->
+<div id="slotArea" style="display:none;">
+  <div class="slot-mask">
+    <div class="slot-highlight"></div>
+    <div class="slot-list" id="slotList"></div>
+  </div>
+</div>
+        
 
     <div class="card">
       <div class="stats">
@@ -393,7 +500,8 @@
       <div class="winner-meta" id="winnerMeta">-</div>
     </div>
   </div>
-
+  
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     const socket = io();
 
@@ -514,90 +622,133 @@
       });
     }
 
-    function revelarGanhador() {
-      if (!sorteadoFinal || resultadoMostrado) return;
 
-      resultadoMostrado = true;
-      statusTextoEl.textContent = "Finalizado";
-      statusBadgeEl.textContent = "Ganhador definido";
-      timerEl.textContent = "0";
+function processarNovoSorteio(data) {
+  console.log("Dados recebidos:", data);
 
-      const indiceBase = rollingList.findIndex(p =>
-        p.nome === sorteadoFinal.nome &&
-        p.cargo === sorteadoFinal.cargo &&
-        p.municipio === sorteadoFinal.municipio &&
-        p.estado === sorteadoFinal.estado &&
-        p.telefone === sorteadoFinal.telefone
-      );
+  if (!data) {
+    console.log("Sem data");
+    return;
+  }
 
-      if (indiceBase >= 0) {
-        offset = Math.max(0, (indiceBase * ITEM_HEIGHT) - ITEM_HEIGHT);
-        atualizarTransform();
-      }
+  const participantes = data.participantes || [];
+  sorteadoFinal = data.sorteado || null;
 
-      pararAnimacao();
+  const idAtual = data.id || JSON.stringify({
+    sorteado: sorteadoFinal,
+    qtd: participantes.length
+  });
 
-      winnerNameEl.textContent = sorteadoFinal.nome || "-";
-      winnerMetaEl.innerHTML = `
-        <strong>Cargo:</strong> ${sorteadoFinal.cargo || "-"}<br>
-        <strong>Município:</strong> ${sorteadoFinal.municipio || "-"}<br>
-        <strong>Estado:</strong> ${sorteadoFinal.estado || "-"} <br>
-        <strong>Telefone:</strong> ${sorteadoFinal.telefone || "-"}
-      `;
+  if (ultimoIdProcessado === idAtual && sorteioEmExecucao) {
+    console.log("Mesmo sorteio já em execução. Ignorando.");
+    return;
+  }
 
-      winnerOverlayEl.classList.add("show");
-      dispararConfete();
+  if (!participantes.length || !sorteadoFinal) {
+    console.log("Dados incompletos, NÃO vou resetar a tela.");
+    return;
+  }
+
+  ultimoIdProcessado = idAtual;
+  sorteioEmExecucao = true;
+
+  waitingBoxEl.style.display = "none";
+  slotAreaEl.style.display = "block";
+  winnerOverlayEl.classList.remove("show");
+
+  resultadoMostrado = false;
+  velocidade = window.innerWidth < 700 ? 18 : 26;
+  offset = 0;
+
+  totalParticipantesEl.textContent = participantes.length;
+  statusTextoEl.textContent = "Em execução";
+
+  if (statusBadgeEl) {
+    statusBadgeEl.textContent = "Rolagem iniciada";
+  }
+
+  rollingList = [];
+  for (let i = 0; i < REPETICOES; i++) {
+    rollingList.push(...participantes);
+  }
+
+  slotList.innerHTML = rollingList.map(p => `
+    <div class="slot-item">${p.nome}</div>
+  `).join("");
+
+  const primeiroItem = document.querySelector(".slot-item");
+  if (primeiroItem) {
+    ITEM_HEIGHT = primeiroItem.offsetHeight + 8;
+  }
+
+  atualizarTransform();
+  iniciarRolagem();
+  iniciarTimer();
+}
+
+function iniciarTimer() {
+  let tempo = DURACAO_REVELACAO;
+  timerEl.textContent = tempo;
+
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+
+  countdownInterval = setInterval(() => {
+    tempo--;
+    timerEl.textContent = tempo;
+
+    if (tempo <= 0) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+      revelarGanhador();
     }
+  }, 1000);
+}
 
-    function processarNovoSorteio(data) {
-      if (!data || !data.id || !data.sorteado) return;
-      if (ultimoIdProcessado === data.id) return;
+function revelarGanhador() {
+  if (!sorteadoFinal || resultadoMostrado) return;
 
-      ultimoIdProcessado = data.id;
+  resultadoMostrado = true;
+  sorteioEmExecucao = false;
 
-      const participantes = data.participantes || [];
-      sorteadoFinal = data.sorteado || null;
+  statusTextoEl.textContent = "Finalizado";
 
-      if (!participantes.length || !sorteadoFinal) {
-        mostrarAguardando();
-        return;
-      }
+  if (statusBadgeEl) {
+    statusBadgeEl.textContent = "Ganhador definido";
+  }
 
-      waitingBoxEl.style.display = "none";
-      slotAreaEl.style.display = "block";
-      winnerOverlayEl.classList.remove("show");
+  timerEl.textContent = "0";
 
-      resultadoMostrado = false;
-      velocidade = window.innerWidth < 700 ? 18 : 26;
-      offset = 0;
+  const indiceBase = rollingList.findIndex(p =>
+    p.nome === sorteadoFinal.nome &&
+    p.cargo === sorteadoFinal.cargo &&
+    p.municipio === sorteadoFinal.municipio &&
+    p.estado === sorteadoFinal.estado &&
+    p.telefone === sorteadoFinal.telefone
+  );
 
-      totalParticipantesEl.textContent = participantes.length;
-      statusTextoEl.textContent = "Em execução";
-      statusBadgeEl.textContent = "Rolagem iniciada";
+  if (indiceBase >= 0) {
+    offset = Math.max(0, (indiceBase * ITEM_HEIGHT) - ITEM_HEIGHT);
+    atualizarTransform();
+  }
 
-      rollingList = [];
-      for (let i = 0; i < REPETICOES; i++) {
-        rollingList.push(...participantes);
-      }
+  pararAnimacao();
 
-      slotList.innerHTML = rollingList.map(p => `
-        <div class="slot-item">${p.nome}</div>
-      `).join("");
+  winnerNameEl.textContent = sorteadoFinal.nome || "-";
+  winnerMetaEl.innerHTML = `
+    <strong>Cargo:</strong> ${sorteadoFinal.cargo || "-"}<br>
+    <strong>Município:</strong> ${sorteadoFinal.municipio || "-"}<br>
+    <strong>Estado:</strong> ${sorteadoFinal.estado || "-"}<br>
+    <strong>Telefone:</strong> ${sorteadoFinal.telefone || "-"}
+  `;
 
-      const primeiroItem = document.querySelector(".slot-item");
-      if (primeiroItem) {
-        ITEM_HEIGHT = primeiroItem.offsetHeight + 8;
-      }
-
-      atualizarTransform();
-      iniciarRolagem();
-      iniciarTimer();
-    }
-
-    socket.on("connect", () => {
-      statusBadgeEl.textContent = "Conectado";
-    });
-
+  winnerOverlayEl.classList.add("show");
+  dispararConfete();
+}
+    if (statusBadgeEl) {
+    statusBadgeEl.textContent = "Conectado";
+}
     socket.on("novo_sorteio", (data) => {
       processarNovoSorteio(data);
     });
@@ -613,6 +764,8 @@
   });
 });
     mostrarAguardando();
+
+    
   </script>
 </body>
 </html>
