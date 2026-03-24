@@ -131,7 +131,8 @@
 
       <input type="text" name="name" class="form-control" placeholder="Nome completo" required>
 
-      <input type="tel" name="telefone" id="telefone" class="form-control" placeholder="Telefone" maxlength="15" required>
+      <input type="tel" name="telefone" id="telefone" class="form-control" placeholder="Celular" maxlength="15"
+        required>
 
       <div class="mb-3">
         <label for="estado" class="form-label">Estado</label>
@@ -142,9 +143,15 @@
 
       <div class="mb-3">
         <label for="municipio" class="form-label">Município</label>
-        <select id="municipio" name="municipio" class="form-select" required>
-          <option value="">Selecione o município</option>
-        </select>
+
+        <div class="input-icon">
+          <i class="bi bi-geo-alt"></i>
+
+          <select id="municipio" name="municipio" class="form-control" required>
+            <option value="">Selecione o município</option>
+          </select>
+
+        </div>
       </div>
 
       <div class="mb-3">
@@ -179,12 +186,16 @@
       </div>
 
       <div class="d-grid">
-<button type="submit" id="btnSubmit" class="btn btn-primary btn-submit">
-              Participar
+        <button type="submit" id="btnSubmit" class="btn btn-primary btn-submit">
+          Participar
         </button>
+
+        {% if mensagem %}
+        <p>{{ mensagem }}</p>
+        {% endif %}
       </div>
       <div id="mensagemSucesso" style="display:none; text-align:center; margin-top:15px;">
-  <div style="
+        <div style="
     background:#ecfdf5;
     border:1px solid #bbf7d0;
     color:#166534;
@@ -192,10 +203,11 @@
     border-radius:10px;
     font-weight:600;
   ">
-    ✅ Seus dados já foram enviados<br>
-    Aguarde até o sorteio começar
-  </div>
-</div>
+
+          ✅ Seus dados já foram enviados<br>
+          Aguarde até o sorteio começar
+        </div>
+      </div>
 
 
       <div class="timer-box">
@@ -204,8 +216,26 @@
 
     </form>
   </div>
+  <div class="modal fade" id="popupSucesso" tabindex="-1" aria-labelledby="popupSucessoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 18px; border: none;">
+      <div class="modal-body text-center p-4">
+        <div style="font-size: 48px; margin-bottom: 10px;">✅</div>
+        <h5 id="popupSucessoLabel" class="fw-bold mb-2">Cadastro enviado com sucesso</h5>
+        <p class="text-muted mb-3">
+          Seus dados foram registrados.<br>
+          Aguarde até o sorteio começar.
+        </p>
+        <button type="button" class="btn btn-primary px-4" id="fecharPopup">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+
+
     let tempo = 60;
     const el = document.getElementById("timerRedirect");
 
@@ -215,11 +245,6 @@
 
       if (el) {
         el.textContent = `Esta tela será atualizada em ${m}:${s}`;
-      }
-
-      if (tempo <= 0) {
-        window.location.href = "/";
-        return;
       }
 
       tempo--;
@@ -248,36 +273,25 @@
       e.target.value = value;
     });
 
-const form = document.querySelector('form');
-const btn = document.getElementById('btnSubmit');
-const mensagem = document.getElementById('mensagemSucesso');
+    const form = document.querySelector('form');
+    const btn = document.getElementById('btnSubmit');
+    const mensagem = document.getElementById('mensagemSucesso');
 
-form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
 
-  e.preventDefault(); // 👉 ESSA LINHA RESOLVE SEU PROBLEMA
+      const num = telefoneInput.value.replace(/\D/g, '');
 
-  const num = telefoneInput.value.replace(/\D/g, '');
+      if (num.length < 10) {
+        alert('Por favor, digite um telefone válido com DDD.');
+        return;
+      }
 
-  if (num.length < 10) {
-    alert('Por favor, digite um telefone válido com DDD.');
-    return;
-  }
+      btn.innerText = "Enviando...";
+      btn.disabled = true;
 
-  // muda botão
-  btn.innerText = "Enviado";
-  btn.disabled = true;
-
-  // mostra mensagem
-  mensagem.style.display = "block";
-
-  // trava campos
-  form.querySelectorAll("input, select").forEach(el => el.disabled = true);
-
-  // 👉 envia depois de 1.5s
-  setTimeout(() => {
-    form.submit();
-  }, 60000);
-});
+      form.submit();
+    });
 
     async function carregarEstados() {
       const url = "https://servicodados.ibge.gov.br/api/v1/localidades/estados";
@@ -319,6 +333,78 @@ form.addEventListener('submit', function (e) {
         municipioSelect.appendChild(option);
       });
     });
+    let sorteioDetectado = false;
+
+    // fica verificando a cada 2s
+    setInterval(escutarSorteio, 2000);
+
+    let ultimoIdProcessado = null;
+
+    async function carregarUltimoSorteio() {
+      try {
+        const res = await fetch("/api/ultimo-sorteio");
+        const data = await res.json();
+
+        if (!res.ok || !data.id || !data.sorteado) {
+          return;
+        }
+
+        if (ultimoIdProcessado === data.id) {
+          return;
+        }
+
+        ultimoIdProcessado = data.id;
+
+        const participantes = data.participantes || [];
+        const sorteado = data.sorteado || {};
+
+        document.getElementById("statusTexto").textContent = "Sorteio iniciado";
+        document.getElementById("statusBadge").textContent = "Atualizado";
+        document.getElementById("totalParticipantes").textContent = participantes.length;
+
+        const slotList = document.getElementById("slotList");
+        slotList.innerHTML = participantes.map(p => `
+        <div class="slot-item">${p.nome}</div>
+      `).join("");
+
+        setTimeout(() => {
+          document.getElementById("winnerName").textContent = sorteado.nome || "-";
+          document.getElementById("winnerMeta").innerHTML = `
+          <strong>Cargo:</strong> ${sorteado.cargo || "-"}<br>
+          <strong>Município:</strong> ${sorteado.municipio || "-"}<br>
+          <strong>Estado:</strong> ${sorteado.estado || "-"}
+        `;
+          document.getElementById("winnerPanel").classList.add("show");
+          document.getElementById("statusTexto").textContent = "Finalizado";
+        }, 3000);
+
+      } catch (e) {
+        console.error("Erro ao buscar sorteio:", e);
+      }
+    }
+
+    async function sortearNormal() {
+      const resp = await fetch('/sortear', { method: 'POST' });
+      const data = await resp.json();
+
+      if (!resp.ok || data.erro) {
+        alert(data.erro || 'Erro ao realizar sorteio.');
+        return;
+      }
+
+      window.open('/telao/' + data.id, '_blank');
+    }
+
+    carregarUltimoSorteio();
+    setInterval(carregarUltimoSorteio, 2000);
+
+    $(document).ready(function () {
+      $('#municipio').select2({
+        placeholder: "Buscar município...",
+        width: '100%'
+      });
+    });
+
   </script>
 
 </body>
