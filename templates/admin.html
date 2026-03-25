@@ -255,46 +255,27 @@
                             <th>Telefone</th>
                             <th>Estado</th>
                             <th>Município</th>
-                            <th>Cargo</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
+                            <th>Cargo</th>                        </tr>
                     </thead>
-                    <tbody>
-                        {% for participante in participantes %}
-                        <tr>
-                            <td>{{ participante.id }}</td>
-                            <td>{{ participante.nome }}</td>
-                            <td>{{ participante.telefone or '-' }}</td>
-                            <td>{{ participante.estado or '-' }}</td>
-                            <td>{{ participante.municipio or '-' }}</td>
-                            <td>{{ participante.cargo }}</td>
-                            <td class="text-center">
-                                <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                    <a href="{{ url_for('editar', id_registro=participante.id) }}" class="btn btn-sm btn-outline-primary btn-action">
-                                        <i class="bi bi-pencil-square"></i>
-                                        Editar
-                                    </a>
 
-                                    <form action="{{ url_for('excluir', id_registro=participante.id) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir este registro?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-action">
-                                            <i class="bi bi-trash"></i>
-                                            Excluir
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">Nenhum participante encontrado.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+                    <tbody>
+    {% for p in participantes %}
+    <tr>
+        <td>{{ p["id"] }}</td>
+        <td>{{ p["nome"] }}</td>
+        <td>{{ p["telefone"] or "-" }}</td>
+        <td>{{ p["estado"] or "-" }}</td>
+        <td>{{ p["municipio"] or "-" }}</td>
+        <td>{{ p["cargo"] or "-" }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -491,12 +472,12 @@
             const data = await resp.json();
 
             if (!resp.ok || data.erro) {
-                resultado.innerText = data.erro || 'Erro ao realizar sorteio de secretário.';
+                resultado.innerText = data.erro || 'Erro ao realizar sorteio.';
                 return;
             }
 
             const nome = data.sorteado?.nome || 'Participante sorteado';
-            resultado.innerText = 'Sorteio de secretário realizado com sucesso. Ganhador: ' + nome + '. Os celulares serão atualizados automaticamente.';
+            resultado.innerText = 'Sorteio realizado com sucesso. Ganhador: ' + nome + '. Os celulares serão atualizados automaticamente.';
         } catch (err) {
             console.error(err);
             resultado.innerText = 'Erro de comunicação com o servidor.';
@@ -505,7 +486,7 @@
 
     async function sortearNormal() {
         const resultado = document.getElementById('resultado');
-        resultado.innerText = 'Executando sorteio normal...';
+        resultado.innerText = 'Executando sorteio...';
 
         try {
             const resp = await fetch('/sortear', {

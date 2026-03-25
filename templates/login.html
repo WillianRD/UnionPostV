@@ -1,14 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #081120, #102745);
+    }
+
+    .login-container {
+        background: rgba(255,255,255,0.05);
+        padding: 30px;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 350px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #fff;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        outline: none;
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+    }
+
+    input::placeholder {
+        color: rgba(255,255,255,0.6);
+    }
+
+    input:focus {
+        border: 1px solid #4da3ff;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #4da3ff;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #3a8ae0;
+    }
+
+    .messages {
+        margin-top: 15px;
+        list-style: none;
+        padding: 0;
+    }
+
+    .messages li {
+        background: rgba(255, 0, 0, 0.2);
+        color: #ff6b6b;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 5px;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    @media (max-width: 400px) {
+        .login-container {
+            padding: 20px;
+        }
+    }
+</style>
+</head>
+
 <body>
-<h2>Login</h2>
-<form method="POST">
-    <input type="text" name="username" placeholder="Usuário" required>
-    <input type="password" name="password" placeholder="Senha" required>
-    <button type="submit">Entrar</button>
-</form>
-{% with messages = get_flashed_messages() %}
-{% if messages %}<ul>{% for msg in messages %}<li>{{msg}}</li>{% endfor %}</ul>{% endif %}
-{% endwith %}
+
+<div class="login-container">
+    <h2>Login</h2>
+
+    <form method="POST">
+        <div class="input-group">
+            <input type="text" name="username" placeholder="Usuário" required>
+        </div>
+
+        <div class="input-group">
+            <input type="password" name="password" placeholder="Senha" required>
+        </div>
+
+        <button type="submit">Entrar</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class="messages">
+            {% for msg in messages %}
+                <li>{{ msg }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+</div>
+
 </body>
 </html>

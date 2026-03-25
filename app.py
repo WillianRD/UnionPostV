@@ -226,14 +226,12 @@ def editar(id):
 @app.route("/deletar-massa", methods=["POST"]) 
 def deletar_massa(): 
     ids = request.form.getlist("ids") 
-    if ids: delete_multiple(ids) 
     flash("Registros excluídos") 
     return redirect(url_for("admin"))
 
 # -----------------------------
 # Página inicial / cadastro
 # -----------------------------
-@login_required
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -270,6 +268,7 @@ def index():
         conn.commit()
         conn.close()
 
+
         return redirect(url_for("sucesso", nome=nome))
 
     return render_template("index.html")
@@ -284,38 +283,33 @@ def sucesso():
 # -----------------------------
 # Admin / lista participantes
 # -----------------------------
-@login_required
 @app.route("/admin")
 @login_required
 def admin():
-
     create_table_sorteio()
 
     conn = connect_data()
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    participantes = conn.execute("""
-    SELECT * FROM sorteio
-    WHERE id NOT IN (
-        SELECT json_extract(dados, '$.id') FROM sorteio_resultado
-    )
-""").fetchall()
-    
+    cursor.execute("""
+        SELECT id, nome, telefone, estado, municipio, cargo
+        FROM sorteio
+        ORDER BY id
+    """)
+    participantes = cursor.fetchall()
 
-    # SECRETÁRIOS DE EDUCAÇÃO
     secretarios_educacao = cursor.execute("""
         SELECT COUNT(*) FROM sorteio
         WHERE LOWER(cargo) LIKE '%secretário de educação%'
            OR LOWER(cargo) LIKE '%secretario de educacao%'
     """).fetchone()[0]
 
-    # PREFEITOS
     prefeitos = cursor.execute("""
         SELECT COUNT(*) FROM sorteio
         WHERE LOWER(cargo) LIKE '%prefeito%'
     """).fetchone()[0]
 
-    # DIRETORES
     diretores = cursor.execute("""
         SELECT COUNT(*) FROM sorteio
         WHERE LOWER(cargo) LIKE '%diretor%'
@@ -338,17 +332,27 @@ def admin():
 @app.route("/pagina-sorteio")
 @login_required
 def pagina_sorteio():
-    conn = connect_data()
-    cargos = conn.execute("""
-        SELECT DISTINCT cargo
-        FROM clientes
-        WHERE cargo IS NOT NULL AND cargo != ''
-        ORDER BY cargo
-    """).fetchall()
-    conn.close()
+    if request.method == "POST":
+        nome = request.form.get("name", "").strip()
+        telefone = request.form.get("telefone", "").strip()
+        estado = request.form.get("estado", "").strip()
+        municipio = request.form.get("municipio", "").strip()
+        cargo = request.form.get("cargo", "").strip()
 
-    lista_cargos = [c["cargo"] for c in cargos]
-    return render_template("sorteio.html", cargos=lista_cargos)
+        conn = connect_data()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO sorteio (nome, telefone, estado, municipio, cargo)
+            VALUES (?, ?, ?, ?, ?)
+        """, (nome, telefone, estado, municipio, cargo))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("telao"))
+
+    return render_template("sorteio.html")
 
 
 # -----------------------------
@@ -533,7 +537,6 @@ def sortear():
 
 @login_required
 @app.route("/tela-sorteio/<int:id>")
-@login_required
 def tela_sorteio(id):
     return render_template("tela-sorteio.html", id_sorteio=id)
 
@@ -605,9 +608,7 @@ def cadastro_sorteio():
 
         conn.commit()
         conn.close()
-
-        return redirect(url_for("telao"))
-
+        return jsonify({"sucesso": True})
     return render_template("sorteio.html")
  
 
@@ -622,7 +623,6 @@ def telao_id(id_sorteio):
 
 @login_required
 @app.route("/buscar-participantes", methods=["GET"])
-@login_required
 def buscar_participantes():
     conn = connect_data()
     cursor = conn.cursor()
@@ -673,4 +673,10 @@ def api_ultimo_sorteio():
 # -----------------------------
 if __name__ == "__main__":
     print("🚀 Iniciando servidor...")
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+socketio.run(
+    app,
+    host="0.0.0.0",
+    port=5000,
+    debug=True,
+    allow_unsafe_werkzeug=True
+)

@@ -449,7 +449,7 @@ body {
       <div class="badge">🏆 UNDIME</div>
       <h1>Sorteio Show de Imagem</h1>
       <p class="subtitle">
-        Parabéns, você tá participando do sorteio da UnionBoard 
+        Parabéns, você estar participando do sorteio da UnionBoard 
       </p>
     </div>
 
@@ -477,7 +477,7 @@ body {
       <div class="stats">
         <div class="stat-box">
           <div class="stat-title">Total de participantes</div>
-          <div class="stat-value" id="totalParticipantes">0</div>
+          <div class="stat-value" id="totalParticipantes">100</div>
         </div>
 
         <div class="stat-box">
@@ -661,7 +661,7 @@ function processarNovoSorteio(data) {
   offset = 0;
 
   totalParticipantesEl.textContent = participantes.length;
-  statusTextoEl.textContent = "Em execução";
+  statusTextoEl.textContent = "Carregando";
 
   if (statusBadgeEl) {
     statusBadgeEl.textContent = "Rolagem iniciada";
