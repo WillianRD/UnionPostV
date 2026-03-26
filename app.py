@@ -1,4 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from werkzeug.security import check_password_hash, generate_password_hash
+from functools import wraps
+import sqlite3
+import re
+import random
+from models import create_table_resultado
+import json
+
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_socketio import SocketIO, emit
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
@@ -7,13 +16,10 @@ import re
 import random
 import json
 from threading import Lock
-from models import create_table_resultado
-import os
-
 db_lock = Lock()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
+app.secret_key = 'uma_chave_super_secreta'
 
 DB_FILE = "banco.db"
 create_table_resultado()
@@ -29,14 +35,10 @@ def connect_data():
     return conn
 
 
-
-
 def create_tables():
     conn = connect_data()
     cursor = conn.cursor()
 
-    cursor.execute("PRAGMA journal_mode=WAL")
-    cursor.execute("PRAGMA synchronous=NORMAL")
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,28 +62,7 @@ def create_tables():
     conn.close()
 
 
-def create_table_sorteio():
-    conn = connect_data()
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS sorteio (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            telefone TEXT NOT NULL UNIQUE,
-            estado TEXT NOT NULL,
-            municipio TEXT NOT NULL,
-            cargo TEXT NOT NULL,
-            criado DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-
-# Garante que todas as tabelas existem ao iniciar
 create_tables()
-create_table_sorteio()
-
 
 def create_admin_user():
     conn = connect_data()
@@ -102,7 +83,22 @@ def create_admin_user():
 
 create_admin_user()
 
-
+def create_table_sorteio():
+    conn = connect_data()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sorteio (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            telefone TEXT NOT NULL UNIQUE,
+            estado TEXT NOT NULL,
+            municipio TEXT NOT NULL,
+            cargo TEXT NOT NULL,
+            criado DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
 # -----------------------------
 # Proteção de login
 # -----------------------------
@@ -149,12 +145,7 @@ def logout():
     flash("Você saiu da sessão.")
     return redirect(url_for('login'))
 
-
-# -----------------------------
-# Editar participante
-# FIX: @login_required deve vir DEPOIS de @app.route
-# FIX: consulta usava "name" em vez de "nome"
-# -----------------------------
+@login_required
 @app.route("/editar/<int:id>", methods=["GET", "POST"])
 @login_required
 def editar(id):
@@ -172,12 +163,16 @@ def editar(id):
 
         if not name:
             erros.append("Nome é obrigatório.")
+
         if not estado:
             erros.append("Estado é obrigatório.")
+
         if not municipio:
             erros.append("Município é obrigatório.")
+
         if not cargo:
             erros.append("Cargo é obrigatório.")
+
         if not re.match(r"^\d{10,11}$", telefone):
             erros.append("Telefone inválido. Informe 10 ou 11 números com DDD.")
 
@@ -187,7 +182,7 @@ def editar(id):
 
             participant = {
                 "id": id,
-                "nome": name,
+                "name": name,
                 "estado": estado,
                 "municipio": municipio,
                 "cargo": cargo,
@@ -198,10 +193,10 @@ def editar(id):
             return render_template("editar.html", participant=participant)
 
         cursor.execute("""
-            UPDATE clientes
-            SET nome = ?, estado = ?, municipio = ?, cargo = ?, telefone = ?
-            WHERE id = ?
-        """, (name, estado, municipio, cargo, telefone, id))
+        UPDATE clientes
+        SET nome = ?, estado = ?, municipio = ?, cargo = ?, telefone = ?
+        WHERE id = ?
+    """, (name, estado, municipio, cargo, telefone, id))
 
         conn.commit()
         conn.close()
@@ -209,9 +204,14 @@ def editar(id):
         flash("Participante atualizado com sucesso.", "success")
         return redirect(url_for("admin"))
 
-    # FIX: coluna era "name", corrigido para "nome"
     participant = cursor.execute("""
-        SELECT id, nome, estado, municipio, cargo, telefone
+        SELECT
+            id,
+            name,
+            estado,
+            municipio,
+            cargo,
+            telefone
         FROM clientes
         WHERE id = ?
     """, (id,)).fetchone()
@@ -224,33 +224,12 @@ def editar(id):
 
     return render_template("editar.html", participant=participant)
 
-
-# -----------------------------
-# Deletar em massa
-# FIX: agora executa o DELETE de fato
-# FIX: @login_required na ordem correta
-# -----------------------------
-@app.route("/deletar-massa", methods=["POST"])
 @login_required
-def deletar_massa():
-    ids = request.form.getlist("ids")
-
-    if not ids:
-        flash("Nenhum registro selecionado.", "warning")
-        return redirect(url_for("admin"))
-
-    conn = connect_data()
-    cursor = conn.cursor()
-
-    placeholders = ",".join("?" for _ in ids)
-    cursor.execute(f"DELETE FROM sorteio WHERE id IN ({placeholders})", ids)
-
-    conn.commit()
-    conn.close()
-
-    flash(f"{cursor.rowcount} registro(s) excluído(s).", "success")
+@app.route("/deletar-massa", methods=["POST"]) 
+def deletar_massa(): 
+    ids = request.form.getlist("ids") 
+    flash("Registros excluídos") 
     return redirect(url_for("admin"))
-
 
 # -----------------------------
 # Página inicial / cadastro
@@ -268,8 +247,10 @@ def index():
 
         if not nome:
             erros.append("Nome obrigatório.")
+
         if not cargo:
             erros.append("Cargo obrigatório.")
+
         if not re.match(r"^\d{10,11}$", telefone):
             erros.append("Telefone inválido. Informe 10 ou 11 números.")
 
@@ -289,6 +270,7 @@ def index():
         conn.commit()
         conn.close()
 
+
         return redirect(url_for("sucesso", nome=nome))
 
     return render_template("index.html")
@@ -306,7 +288,10 @@ def sucesso():
 @app.route("/admin")
 @login_required
 def admin():
+    create_table_sorteio()
+
     conn = connect_data()
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -341,13 +326,12 @@ def admin():
         prefeitos=prefeitos,
         diretores=diretores
     )
-
+    
 
 # -----------------------------
 # Página de sorteio
-# FIX: era GET-only mas tentava checar POST — corrigido para aceitar POST também
 # -----------------------------
-@app.route("/pagina-sorteio", methods=["GET", "POST"])
+@app.route("/pagina-sorteio")
 @login_required
 def pagina_sorteio():
     if request.method == "POST":
@@ -375,9 +359,8 @@ def pagina_sorteio():
 
 # -----------------------------
 # API - listar participantes
-# FIX: @login_required na ordem correta
-# FIX: filtro de cargo agora usa o parâmetro recebido
 # -----------------------------
+@login_required
 @app.route("/api/participantes", methods=["GET"])
 @login_required
 def api_participantes():
@@ -388,34 +371,35 @@ def api_participantes():
 
     if cargo:
         participantes = cursor.execute("""
-            SELECT * FROM clientes WHERE cargo = ?
-        """, (cargo,)).fetchall()
+        SELECT * FROM clientes
+        WHERE cargo = ?
+        """, ("Secretário de Educação",)).fetchall()
     else:
         participantes = cursor.execute("""
-            SELECT * FROM clientes
-        """).fetchall()
+        SELECT * FROM clientes
+        WHERE cargo = ?
+        """, ("Secretário de Educação",)).fetchall()
 
     conn.close()
 
-    resultado = [
-        {
+    resultado = []
+    for p in participantes:
+        resultado.append({
             "id": p["id"],
             "nome": p["nome"],
             "estado": p["estado"],
             "municipio": p["municipio"],
             "cargo": p["cargo"],
             "telefone": p["telefone"]
-        }
-        for p in participantes
-    ]
+        })
 
     return jsonify(resultado)
 
 
 # -----------------------------
-# API - sorteio DME (Secretário de Educação)
-# FIX: @login_required na ordem correta
+# API - sorteio
 # -----------------------------
+@login_required
 @app.route("/sortear-dme", methods=["POST"])
 @login_required
 def sortear_dme():
@@ -471,16 +455,22 @@ def sortear_dme():
     id_sorteio = cursor.lastrowid
     conn.close()
 
-    evento = {"id": id_sorteio, **payload}
+    evento = {
+        "id": id_sorteio,
+        **payload
+    }
+
     socketio.emit("novo_sorteio", evento)
 
-    return jsonify({"ok": True, "id": id_sorteio, "sorteado": sorteado_json})
+    return jsonify({
+        "ok": True,
+        "id": id_sorteio,
+        "sorteado": sorteado_json
+    })
+    
 
-
-# -----------------------------
-# API - sorteio geral
-# FIX: @login_required na ordem correta
-# -----------------------------
+   
+@login_required
 @app.route("/sortear", methods=["POST"])
 @login_required
 def sortear():
@@ -506,7 +496,7 @@ def sortear():
             "municipio": p["municipio"],
             "cargo": p["cargo"],
             "telefone": p["telefone"]
-        }
+        } 
         for p in participantes
     ]
 
@@ -535,23 +525,25 @@ def sortear():
     id_sorteio = cursor.lastrowid
     conn.close()
 
-    evento = {"id": id_sorteio, **payload}
+    evento = {
+        "id": id_sorteio,
+        **payload
+    }
+
     socketio.emit("novo_sorteio", evento)
 
-    return jsonify({"ok": True, "id": id_sorteio, "sorteado": sorteado_json})
+    return jsonify({
+        "ok": True,
+        "id": id_sorteio,
+        "sorteado": sorteado_json
+    })
 
-
-@app.route("/tela-sorteio/<int:id>")
 @login_required
+@app.route("/tela-sorteio/<int:id>")
 def tela_sorteio(id):
     return render_template("tela-sorteio.html", id_sorteio=id)
 
-
-# -----------------------------
-# Buscar sorteio por ID
-# FIX: @login_required na ordem correta
-# FIX: buscava em "sorteio" (sem coluna dados), corrigido para "sorteio_resultado"
-# -----------------------------
+@login_required
 @app.route("/sorteio/<int:id>")
 @login_required
 def get_sorteio(id):
@@ -559,7 +551,7 @@ def get_sorteio(id):
     cursor = conn.cursor()
 
     row = cursor.execute("""
-        SELECT dados FROM sorteio_resultado
+        SELECT dados FROM sorteio
         WHERE id = ?
     """, (id,)).fetchone()
 
@@ -578,16 +570,18 @@ def get_sorteio(id):
         "estado": sorteado.get("estado", ""),
         "telefone": sorteado.get("telefone", "")
     })
-
-
+@login_required
 @app.route("/api/sorteio/<int:id>")
 @login_required
 def api_sorteio(id):
+    import json
+
     conn = connect_data()
     cursor = conn.cursor()
 
     row = cursor.execute("""
-        SELECT dados FROM sorteio_resultado
+        SELECT dados
+        FROM sorteio_resultado
         WHERE id = ?
     """, (id,)).fetchone()
 
@@ -598,11 +592,6 @@ def api_sorteio(id):
 
     return jsonify(json.loads(row["dados"]))
 
-
-# -----------------------------
-# Cadastro sorteio (tela pública)
-# FIX: removido conn.close() duplo e return inacessível
-# -----------------------------
 @app.route("/sorteio-tela", methods=["GET", "POST"])
 def cadastro_sorteio():
     if request.method == "POST":
@@ -619,7 +608,7 @@ def cadastro_sorteio():
             cursor.execute("""
                 INSERT INTO sorteio (nome, telefone, estado, municipio, cargo)
                 VALUES (?, ?, ?, ?, ?)
-            """, (nome, telefone, estado, municipio, cargo))
+                """, (nome, telefone, estado, municipio, cargo))
 
             conn.commit()
             return jsonify({"sucesso": True})
@@ -628,17 +617,23 @@ def cadastro_sorteio():
             return jsonify({"erro": str(e)}), 500
 
         finally:
-            conn.close()  # só aqui, sem duplicata
-
+            conn.close()
+        conn.close()
+        return jsonify({"sucesso": True})
     return render_template("sorteio.html")
+ 
 
+@app.route("/telao")
+def telao():
+    return render_template("tela-sorteio.html")
 
-# -----------------------------
-# Buscar participantes
-# FIX: @login_required na ordem correta
-# -----------------------------
-@app.route("/buscar-participantes", methods=["GET"])
 @login_required
+@app.route("/telao/<int:id_sorteio>")
+def telao_id(id_sorteio):
+    return render_template("tela-sorteio.html", id_sorteio=id_sorteio)
+
+@login_required
+@app.route("/buscar-participantes", methods=["GET"])
 def buscar_participantes():
     conn = connect_data()
     cursor = conn.cursor()
@@ -662,27 +657,8 @@ def buscar_participantes():
         for p in participantes
     ])
 
-
-# -----------------------------
-# Telão
-# -----------------------------
-@app.route("/telao")
-def telao():
-    return render_template("tela-sorteio.html")
-
-
-@app.route("/telao/<int:id_sorteio>")
 @login_required
-def telao_id(id_sorteio):
-    return render_template("tela-sorteio.html", id_sorteio=id_sorteio)
-
-
-# -----------------------------
-# Último sorteio
-# FIX: @login_required na ordem correta
-# -----------------------------
 @app.route("/api/ultimo-sorteio")
-@login_required
 def api_ultimo_sorteio():
     conn = connect_data()
     cursor = conn.cursor()
@@ -703,11 +679,9 @@ def api_ultimo_sorteio():
     dados["id"] = row["id"]
 
     return jsonify(dados)
-
-
 # -----------------------------
 # Rodar o app
 # -----------------------------
 if __name__ == "__main__":
     print("🚀 Iniciando servidor...")
-    socketio.run(app, host="0.0.0.0", port=5000, debug=False)
+    socketio.run(app, host="0.0.0.0", port=5000)
