@@ -27,8 +27,9 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # Banco de dados
 # -----------------------------
 def connect_data():
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=15, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL;")
     return conn
 
 
@@ -74,8 +75,7 @@ def create_admin_user():
             "INSERT INTO users (username, password) VALUES (?, ?)",
             ("admin", senha_hash)
         )
-        conn.commit()
-
+    conn.commit()
     conn.close()
 
 
@@ -465,6 +465,7 @@ def sortear_dme():
         "id": id_sorteio,
         "sorteado": sorteado_json
     })
+    
 
    
 @login_required
@@ -493,7 +494,7 @@ def sortear():
             "municipio": p["municipio"],
             "cargo": p["cargo"],
             "telefone": p["telefone"]
-        }
+        } 
         for p in participantes
     ]
 
@@ -598,15 +599,23 @@ def cadastro_sorteio():
         municipio = request.form.get("municipio", "").strip()
         cargo = request.form.get("cargo", "").strip()
 
-        conn = connect_data()
-        cursor = conn.cursor()
+        try:
+            conn = connect_data()
+            cursor = conn.cursor()
 
-        cursor.execute("""
-            INSERT INTO sorteio (nome, telefone, estado, municipio, cargo)
-            VALUES (?, ?, ?, ?, ?)
-        """, (nome, telefone, estado, municipio, cargo))
+            cursor.execute("""
+                INSERT INTO sorteio (nome, telefone, estado, municipio, cargo)
+                VALUES (?, ?, ?, ?, ?)
+                """, (nome, telefone, estado, municipio, cargo))
 
-        conn.commit()
+            conn.commit()
+            return jsonify({"sucesso": True})
+
+        except Exception as e:
+            return jsonify({"erro": str(e)}), 500
+
+        finally:
+            conn.close()
         conn.close()
         return jsonify({"sucesso": True})
     return render_template("sorteio.html")

@@ -9,9 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     :root {
       --bg1: #03152d;
@@ -30,18 +28,14 @@
       min-height: 100%;
       font-family: Arial, Helvetica, sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at top, #11365d 0%, #071b3b 38%, #020814 100%);
+      background: radial-gradient(circle at top, #11365d 0%, #071b3b 38%, #020814 100%);
       overflow-x: hidden;
     }
 
-    body {
-      padding: 14px;
-    }
+    body { padding: 14px; }
 
     .container {
-      width: 100%;
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
@@ -79,31 +73,12 @@
       line-height: 1.35;
     }
 
-    h2 {
-      margin: 0 0 12px;
-      font-size: clamp(26px, 7vw, 46px);
-      line-height: 1.08;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 9px 16px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: var(--gold);
-      font-weight: 700;
-      font-size: 14px;
-      margin-bottom: 14px;
-    }
-
     .slot-wrapper {
       position: relative;
       min-height: 220px;
       border-radius: 20px;
       padding: 12px;
-      background:
-        radial-gradient(circle at center, rgba(23, 55, 115, 0.55) 0%, rgba(7, 18, 40, 0.95) 70%);
+      background: radial-gradient(circle at center, rgba(23, 55, 115, 0.55) 0%, rgba(7, 18, 40, 0.95) 70%);
       border: 1px solid rgba(255,255,255,0.10);
       overflow: hidden;
     }
@@ -114,9 +89,7 @@
       overflow: hidden;
       border-radius: 18px;
       border: 2px solid rgba(255, 211, 92, 0.82);
-      box-shadow:
-        0 0 18px rgba(255, 211, 92, 0.20),
-        inset 0 0 25px rgba(0,0,0,0.22);
+      box-shadow: 0 0 18px rgba(255, 211, 92, 0.20), inset 0 0 25px rgba(0,0,0,0.22);
       background: rgba(255,255,255,0.03);
     }
 
@@ -126,7 +99,7 @@
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
-      height: 58px;
+      height: 60px;
       border-radius: 14px;
       border: 2px solid rgba(255, 211, 92, 0.95);
       box-shadow: 0 0 16px rgba(255, 211, 92, 0.30);
@@ -144,17 +117,16 @@
     }
 
     .slot-item {
-      height: 50px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
+      padding: 0 10px;
       font-size: clamp(18px, 5vw, 34px);
       font-weight: 800;
-      color: rgba(255,255,255,0.96);
-      padding: 0 10px;
-      margin-bottom: 8px;
       line-height: 1.15;
+      color: rgba(255,255,255,0.96);
       word-break: break-word;
     }
 
@@ -169,6 +141,28 @@
       font-weight: 700;
       padding: 16px;
       line-height: 1.3;
+    }
+
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .loader {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255,255,255,0.2);
+      border-top: 5px solid #4fd1ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
     }
 
     .stats {
@@ -193,9 +187,8 @@
 
     .stat-value {
       font-size: clamp(24px, 8vw, 44px);
-      font-weight: 900;
+      font-weight: 1000;
       line-height: 1;
-      word-break: break-word;
     }
 
     .winner-overlay {
@@ -224,9 +217,7 @@
       border: 2px solid rgba(255, 211, 92, 0.70);
       border-radius: 24px;
       padding: 22px 16px;
-      box-shadow:
-        0 0 28px rgba(255, 211, 92, 0.16),
-        0 22px 60px rgba(0,0,0,0.42);
+      box-shadow: 0 0 28px rgba(255, 211, 92, 0.16), 0 22px 60px rgba(0,0,0,0.42);
       transform: scale(0.9);
       opacity: 0;
     }
@@ -254,19 +245,11 @@
       word-break: break-word;
     }
 
-    .winner-meta strong {
-      color: #ffffff;
-    }
+    .winner-meta strong { color: #ffffff; }
 
     @keyframes popWinner {
-      0% {
-        transform: scale(0.9) translateY(14px);
-        opacity: 0;
-      }
-      100% {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-      }
+      0% { transform: scale(0.9) translateY(14px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
     }
 
     @keyframes fadeInOverlay {
@@ -275,9 +258,7 @@
     }
 
     @media (min-width: 700px) {
-      body {
-        padding: 20px;
-      }
+      body { padding: 20px; }
 
       .card {
         border-radius: 28px;
@@ -290,30 +271,21 @@
         padding: 18px;
       }
 
-      .slot-mask {
-        height: 220px;
-      }
+      .slot-mask { height: 220px; }
 
       .slot-highlight {
         left: 18px;
         right: 18px;
-        height: 72px;
+        height: 64px;
         border-radius: 16px;
         border-width: 3px;
       }
 
-      .slot-list {
-        padding: 80px 0;
-      }
+      .slot-list { padding: 80px 0; }
 
-      .slot-item {
-        height: 64px;
-        margin-bottom: 8px;
-      }
+      .slot-item { height: 64px; }
 
-      .waiting {
-        min-height: 220px;
-      }
+      .waiting { min-height: 220px; }
 
       .stats {
         grid-template-columns: repeat(3, 1fr);
@@ -326,121 +298,13 @@
         min-height: 120px;
       }
 
-      .winner-overlay {
-        padding: 24px;
-      }
+      .winner-overlay { padding: 24px; }
 
       .winner-panel {
         border-radius: 30px;
         padding: 34px 28px;
       }
     }
-
-    .waiting {
-    height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.loader-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    text-align: center;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #0b1f3a;
-  color: white;
-}
-
-.container {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
-}
-
-.card {
-  background: #142a52;
-  padding: 20px;
-  border-radius: 20px;
-  margin-bottom: 20px;
-}
-
-/* ===== LOADING ===== */
-
-.waiting {
-  height: 250px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loader-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.loader {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(255,255,255,0.2);
-  border-top: 5px solid #4fd1ff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  100% { transform: rotate(360deg); }
-}
-
-/* ===== ROLETA ===== */
-
-.slot-wrapper {
-  min-height: 250px;
-}
-
-.slot-mask {
-  height: 200px;
-  overflow: hidden;
-  border: 2px solid gold;
-  border-radius: 15px;
-  position: relative;
-}
-
-.slot-highlight {
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  right: 10px;
-  height: 60px;
-  transform: translateY(-50%);
-  border: 2px solid gold;
-}
-
-.slot-list {
-  position: absolute;
-  width: 100%;
-}
-
-.slot-item {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
   </style>
 </head>
 <body>
@@ -448,41 +312,37 @@ body {
     <div class="card">
       <div class="badge">🏆 UNDIME</div>
       <h1>Sorteio Show de Imagem</h1>
-      <p class="subtitle">
-        Parabéns, você estar participando do sorteio da UnionBoard 
-      </p>
+      <p class="subtitle">Parabéns, você está participando do sorteio da UnionBoard.</p>
     </div>
 
     <div class="card">
-<div class="slot-wrapper">
+      <div class="slot-wrapper">
+        <div id="waitingBox" class="waiting">
+          <div class="loader-container">
+            <div class="loader"></div>
+            <p>Aguardando sorteio...</p>
+          </div>
+        </div>
 
-   <!-- LOADER -->
-      <div id="waitingBox" class="waiting">
-        <div class="loader-container">
-          <div class="loader"></div>
-          <p>Aguardando sorteio...</p>
+        <div id="slotArea" style="display:none;">
+          <div class="slot-mask" id="slotMask">
+            <div class="slot-highlight"></div>
+            <div class="slot-list" id="slotList"></div>
+          </div>
         </div>
       </div>
-
-      <!-- ROLETA -->
-<div id="slotArea" style="display:none;">
-  <div class="slot-mask">
-    <div class="slot-highlight"></div>
-    <div class="slot-list" id="slotList"></div>
-  </div>
-</div>
-        
+    </div>
 
     <div class="card">
       <div class="stats">
         <div class="stat-box">
           <div class="stat-title">Total de participantes</div>
-          <div class="stat-value" id="totalParticipantes">100</div>
+          <div class="stat-value" id="totalParticipantes">+100</div>
         </div>
 
         <div class="stat-box">
           <div class="stat-title">Status</div>
-          <div class="stat-value" id="statusTexto">Aguardando</div>
+          <div class="stat-value" id="statusTexto">Recebendo participantes</div>
         </div>
 
         <div class="stat-box">
@@ -494,278 +354,234 @@ body {
   </div>
 
   <div class="winner-overlay" id="winnerOverlay">
-    <div class="winner-panel" id="winnerPanel">
+    <div class="winner-panel">
       <div class="badge">🎉 Ganhador revelado</div>
       <div class="winner-name" id="winnerName">-</div>
       <div class="winner-meta" id="winnerMeta">-</div>
     </div>
   </div>
-  
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
   <script>
-    const socket = io();
+  const socket = io();
 
-    const slotList = document.getElementById("slotList");
-    const totalParticipantesEl = document.getElementById("totalParticipantes");
-    const statusTextoEl = document.getElementById("statusTexto");
-    const statusBadgeEl = document.getElementById("statusBadge");
-    const timerEl = document.getElementById("timer");
-    const waitingBoxEl = document.getElementById("waitingBox");
-    const slotAreaEl = document.getElementById("slotArea");
+  const slotList = document.getElementById("slotList");
+  const slotMask = document.getElementById("slotMask");
+  const statusTextoEl = document.getElementById("statusTexto");
+  const timerEl = document.getElementById("timer");
+  const totalParticipantesEl = document.getElementById("totalParticipantes");
+  const waitingBoxEl = document.getElementById("waitingBox");
+  const slotAreaEl = document.getElementById("slotArea");
 
-    const winnerOverlayEl = document.getElementById("winnerOverlay");
-    const winnerNameEl = document.getElementById("winnerName");
-    const winnerMetaEl = document.getElementById("winnerMeta");
+  const winnerOverlayEl = document.getElementById("winnerOverlay");
+  const winnerNameEl = document.getElementById("winnerName");
+  const winnerMetaEl = document.getElementById("winnerMeta");
 
-    let rollingList = [];
-    let sorteadoFinal = null;
-    let animationFrame = null;
-    let countdownInterval = null;
-    let offset = 0;
-    let velocidade = 22;
-    let ITEM_HEIGHT = 58;
-    const REPETICOES = 16;
-    const DURACAO_REVELACAO = 8;
-    let resultadoMostrado = false;
-    let ultimoIdProcessado = null;
+  let rollingList = [];
+  let sorteadoFinal = null;
+  let participanteExibido = null;
+  let animationFrame = null;
+  let countdownInterval = null;
+  let offset = 0;
+  let velocidade = 22;
+  let itemHeight = 60;
+  const repeticoes = 20;
+  const duracaoRevelacao = 8;
+  let resultadoMostrado = false;
 
-    function mostrarAguardando() {
-      waitingBoxEl.style.display = "flex";
-      slotAreaEl.style.display = "none";
-      winnerOverlayEl.classList.remove("show");
-      statusTextoEl.textContent = "Aguardando";
-      statusBadgeEl.textContent = "Conectado";
-      timerEl.textContent = "--";
-      totalParticipantesEl.textContent = "0";
+  function atualizarTransform() {
+    slotList.style.transform = `translateY(${-offset}px)`;
+  }
+
+  function pararAnimacao() {
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
     }
+  }
 
-    function atualizarTransform() {
-      slotList.style.transform = `translateY(${-offset}px)`;
-    }
+  function obterAlturaItem() {
+    const item = slotList.querySelector(".slot-item");
+    if (!item) return;
+    itemHeight = item.getBoundingClientRect().height || item.offsetHeight || 60;
+  }
 
-    function pararAnimacao() {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = null;
+  function obterPaddingTopoLista() {
+    const estilos = getComputedStyle(slotList);
+    return parseFloat(estilos.paddingTop) || 0;
+  }
+
+  function iniciarRolagem() {
+    pararAnimacao();
+
+    function animar() {
+      offset += velocidade;
+
+      const totalAltura = rollingList.length * itemHeight;
+      const metadeLoop = totalAltura / 2;
+
+      if (offset >= metadeLoop) {
+        offset -= metadeLoop;
       }
-    }
 
-    function iniciarRolagem() {
-      pararAnimacao();
-
-      function animar() {
-        offset += velocidade;
-
-        const totalAltura = rollingList.length * ITEM_HEIGHT;
-        if (offset >= totalAltura / 2) {
-          offset = 0;
-        }
-
-        atualizarTransform();
-        animationFrame = requestAnimationFrame(animar);
-      }
-
+      atualizarTransform();
       animationFrame = requestAnimationFrame(animar);
     }
 
-    function iniciarTimer() {
-      let tempo = DURACAO_REVELACAO;
-      timerEl.textContent = tempo;
+    animationFrame = requestAnimationFrame(animar);
+  }
 
-      if (countdownInterval) {
+  function iniciarTimer() {
+    let tempo = duracaoRevelacao;
+    timerEl.textContent = tempo;
+    statusTextoEl.textContent = "Sorteando";
+
+    clearInterval(countdownInterval);
+
+    countdownInterval = setInterval(() => {
+      tempo--;
+      timerEl.textContent = tempo > 0 ? tempo : 0;
+
+      if (tempo <= 0) {
         clearInterval(countdownInterval);
+        revelarGanhador();
+      }
+    }, 1000);
+  }
+
+  function processarNovoSorteio(data) {
+    if (!data || !Array.isArray(data.participantes) || !data.sorteado) return;
+
+    const participantes = data.participantes;
+    sorteadoFinal = data.sorteado;
+    participanteExibido = null;
+    resultadoMostrado = false;
+
+    waitingBoxEl.style.display = "none";
+    slotAreaEl.style.display = "block";
+    winnerOverlayEl.classList.remove("show");
+
+    offset = 0;
+    velocidade = window.innerWidth < 700 ? 18 : 26;
+
+    rollingList = [];
+    for (let i = 0; i < repeticoes; i++) {
+      rollingList.push(...participantes);
+    }
+
+    slotList.innerHTML = rollingList
+      .map((p) => `<div class="slot-item">${p.nome ?? ""}</div>`)
+      .join("");
+
+    obterAlturaItem();
+    atualizarTransform();
+    iniciarRolagem();
+    iniciarTimer();
+  }
+
+  function revelarGanhador() {
+    if (!sorteadoFinal || resultadoMostrado) return;
+
+    resultadoMostrado = true;
+    statusTextoEl.textContent = "Ganhador revelado";
+
+    const totalAltura = rollingList.length * itemHeight;
+    const metadeLoop = totalAltura / 2;
+    const offsetNormalizado = ((offset % metadeLoop) + metadeLoop) % metadeLoop;
+    const paddingTopo = obterPaddingTopoLista();
+
+    const indices = [];
+    rollingList.forEach((p, i) => {
+      if (String(p.id) === String(sorteadoFinal.id)) {
+        indices.push(i);
+      }
+    });
+
+    if (!indices.length) {
+      console.error("Ganhador não encontrado na lista");
+      return;
+    }
+
+    participanteExibido = rollingList[indices[0]];
+
+    const centro = slotMask.offsetHeight / 2;
+    let melhorDestino = null;
+    let menorDistancia = Infinity;
+
+    for (const indice of indices) {
+      let pos = paddingTopo + (indice * itemHeight) - centro + (itemHeight / 2);
+
+      while (pos <= offsetNormalizado + itemHeight * 2) {
+        pos += metadeLoop;
       }
 
-      countdownInterval = setInterval(() => {
-        tempo--;
-        timerEl.textContent = tempo;
-
-        if (tempo <= 0) {
-          clearInterval(countdownInterval);
-          countdownInterval = null;
-          revelarGanhador();
-        }
-      }, 1000);
+      const distancia = pos - offsetNormalizado;
+      if (distancia < menorDistancia) {
+        menorDistancia = distancia;
+        melhorDestino = pos;
+      }
     }
 
-    function dispararConfete() {
-      const duracao = 3500;
-      const fim = Date.now() + duracao;
+    const start = offsetNormalizado;
+    const destino = melhorDestino;
+    const duration = 1800;
+    let startTime = null;
 
-      const intervalo = setInterval(() => {
-        if (Date.now() > fim) {
-          clearInterval(intervalo);
-          return;
-        }
-
-        confetti({
-          particleCount: 16,
-          angle: 60,
-          spread: 70,
-          origin: { x: 0 },
-          startVelocity: 42
-        });
-
-        confetti({
-          particleCount: 16,
-          angle: 120,
-          spread: 70,
-          origin: { x: 1 },
-          startVelocity: 42
-        });
-      }, 220);
-
-      confetti({
-        particleCount: 140,
-        spread: 110,
-        origin: { y: 0.55 }
-      });
+    function easeOut(t) {
+      return 1 - Math.pow(1 - t, 4);
     }
 
+    pararAnimacao();
 
-function processarNovoSorteio(data) {
-  console.log("Dados recebidos:", data);
+    function animarFinal(timestamp) {
+      if (!startTime) startTime = timestamp;
 
-  if (!data) {
-    console.log("Sem data");
-    return;
-  }
+      let progress = (timestamp - startTime) / duration;
+      if (progress > 1) progress = 1;
 
-  const participantes = data.participantes || [];
-  sorteadoFinal = data.sorteado || null;
+      const eased = easeOut(progress);
+      offset = start + (destino - start) * eased;
 
-  const idAtual = data.id || JSON.stringify({
-    sorteado: sorteadoFinal,
-    qtd: participantes.length
-  });
+      atualizarTransform();
 
-  if (ultimoIdProcessado === idAtual && sorteioEmExecucao) {
-    console.log("Mesmo sorteio já em execução. Ignorando.");
-    return;
-  }
-
-  if (!participantes.length || !sorteadoFinal) {
-    console.log("Dados incompletos, NÃO vou resetar a tela.");
-    return;
-  }
-
-  ultimoIdProcessado = idAtual;
-  sorteioEmExecucao = true;
-
-  waitingBoxEl.style.display = "none";
-  slotAreaEl.style.display = "block";
-  winnerOverlayEl.classList.remove("show");
-
-  resultadoMostrado = false;
-  velocidade = window.innerWidth < 700 ? 18 : 26;
-  offset = 0;
-
-  totalParticipantesEl.textContent = participantes.length;
-  statusTextoEl.textContent = "Carregando";
-
-  if (statusBadgeEl) {
-    statusBadgeEl.textContent = "Rolagem iniciada";
-  }
-
-  rollingList = [];
-  for (let i = 0; i < REPETICOES; i++) {
-    rollingList.push(...participantes);
-  }
-
-  slotList.innerHTML = rollingList.map(p => `
-    <div class="slot-item">${p.nome}</div>
-  `).join("");
-
-  const primeiroItem = document.querySelector(".slot-item");
-  if (primeiroItem) {
-    ITEM_HEIGHT = primeiroItem.offsetHeight + 8;
-  }
-
-  atualizarTransform();
-  iniciarRolagem();
-  iniciarTimer();
-}
-
-function iniciarTimer() {
-  let tempo = DURACAO_REVELACAO;
-  timerEl.textContent = tempo;
-
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-  }
-
-  countdownInterval = setInterval(() => {
-    tempo--;
-    timerEl.textContent = tempo;
-
-    if (tempo <= 0) {
-      clearInterval(countdownInterval);
-      countdownInterval = null;
-      revelarGanhador();
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animarFinal);
+      } else {
+        offset = destino;
+        atualizarTransform();
+        mostrarResultado();
+      }
     }
-  }, 1000);
-}
 
-function revelarGanhador() {
-  if (!sorteadoFinal || resultadoMostrado) return;
-
-  resultadoMostrado = true;
-  sorteioEmExecucao = false;
-
-  statusTextoEl.textContent = "Finalizado";
-
-  if (statusBadgeEl) {
-    statusBadgeEl.textContent = "Ganhador definido";
+    animationFrame = requestAnimationFrame(animarFinal);
   }
 
-  timerEl.textContent = "0";
+  function mostrarResultado() {
+    const vencedor = participanteExibido || sorteadoFinal || {};
 
-  const indiceBase = rollingList.findIndex(p =>
-    p.nome === sorteadoFinal.nome &&
-    p.cargo === sorteadoFinal.cargo &&
-    p.municipio === sorteadoFinal.municipio &&
-    p.estado === sorteadoFinal.estado &&
-    p.telefone === sorteadoFinal.telefone
-  );
+    winnerNameEl.textContent = vencedor.nome || "-";
+    winnerMetaEl.innerHTML = `
+      <strong>Cargo:</strong> ${vencedor.cargo || "-"}<br>
+      <strong>Município:</strong> ${vencedor.municipio || "-"}<br>
+      <strong>Estado:</strong> ${vencedor.estado || "-"}<br>
+      <strong>Telefone:</strong> ${vencedor.telefone || "-"}
+    `;
 
-  if (indiceBase >= 0) {
-    offset = Math.max(0, (indiceBase * ITEM_HEIGHT) - ITEM_HEIGHT);
-    atualizarTransform();
-  }
+    winnerOverlayEl.classList.add("show");
 
-  pararAnimacao();
-
-  winnerNameEl.textContent = sorteadoFinal.nome || "-";
-  winnerMetaEl.innerHTML = `
-    <strong>Cargo:</strong> ${sorteadoFinal.cargo || "-"}<br>
-    <strong>Município:</strong> ${sorteadoFinal.municipio || "-"}<br>
-    <strong>Estado:</strong> ${sorteadoFinal.estado || "-"}<br>
-    <strong>Telefone:</strong> ${sorteadoFinal.telefone || "-"}
-  `;
-
-  winnerOverlayEl.classList.add("show");
-  dispararConfete();
-}
-    if (statusBadgeEl) {
-    statusBadgeEl.textContent = "Conectado";
-}
-    socket.on("novo_sorteio", (data) => {
-      processarNovoSorteio(data);
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.6 }
     });
+  }
 
-    socket.on("disconnect", () => {
-      statusBadgeEl.textContent = "Desconectado";
-    });
+  socket.on("novo_sorteio", processarNovoSorteio);
 
-    $(document).ready(function() {
-  $('#municipio').select2({
-    placeholder: "Buscar município...",
-    width: '100%'
+  window.addEventListener("resize", () => {
+    if (slotAreaEl.style.display !== "none") {
+      obterAlturaItem();
+    }
   });
-});
-    mostrarAguardando();
-
-    
   </script>
 </body>
 </html>

