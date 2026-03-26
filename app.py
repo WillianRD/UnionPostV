@@ -657,6 +657,11 @@ def buscar_participantes():
         for p in participantes
     ])
 
+@app.route("/qr-code")
+def qrcode():
+    print("Página sorteio")
+    return render_template("qr-code.html")
+
 @login_required
 @app.route("/api/ultimo-sorteio")
 def api_ultimo_sorteio():

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UnionBoard & Show de Imagem — Undime Aracaju</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --accent: #4A90D9;
+    --accent-light: #7AB8F0;
+    --dark: #0A1628;
+    --dark-card: #112240;
+    --white: #F0F4FF;
+    --white-dim: rgba(240, 244, 255, 0.6);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--dark);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 900px;
+    background: radial-gradient(circle, rgba(74,144,217,0.15) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74,144,217,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,144,217,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px;
+    max-width: 620px;
+    width: 100%;
+    animation: fadeUp 0.9s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .ornament {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.9s ease 0.1s both;
+  }
+  .ornament-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent));
+  }
+  .ornament-line.right {
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .ornament-diamond {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    transform: rotate(45deg);
+  }
+
+  .logo-area {
+    margin-bottom: 20px;
+    animation: fadeUp 0.9s ease 0.15s both;
+  }
+  .logo-area img {
+    max-height: 80px;
+    max-width: 260px;
+    object-fit: contain;
+    filter: brightness(1.1);
+  }
+  .logo-placeholder {
+    display: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .event-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 900;
+    color: var(--white);
+    text-align: center;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    animation: fadeUp 0.9s ease 0.2s both;
+  }
+
+  .event-sub {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--accent-light);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-align: center;
+    margin-bottom: 36px;
+    animation: fadeUp 0.9s ease 0.25s both;
+  }
+
+  .qr-card {
+    background: var(--dark-card);
+    border: 1px solid rgba(74,144,217,0.25);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    box-shadow:
+      0 0 0 1px rgba(74,144,217,0.05),
+      0 20px 60px rgba(0,0,0,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+    animation: fadeUp 0.9s ease 0.3s both;
+  }
+
+  .qr-card::before,
+  .qr-card::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--accent);
+    border-style: solid;
+    opacity: 0.6;
+  }
+  .qr-card::before {
+    top: -1px; left: -1px;
+    border-width: 2px 0 0 2px;
+    border-radius: 20px 0 0 0;
+  }
+  .qr-card::after {
+    bottom: -1px; right: -1px;
+    border-width: 0 2px 2px 0;
+    border-radius: 0 0 20px 0;
+  }
+
+  .qr-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent-light);
+  }
+
+  #qrcode {
+    background: white;
+    padding: 14px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #qrcode img, #qrcode canvas {
+    display: block;
+    border-radius: 4px;
+  }
+
+  .instructions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-top: 4px;
+    animation: fadeUp 0.9s ease 0.4s both;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(74,144,217,0.06);
+    border: 1px solid rgba(74,144,217,0.15);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1E5FAA, var(--accent));
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--white-dim);
+    line-height: 1.4;
+  }
+
+  .step-text strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  .url-pill {
+    margin-top: 8px;
+    background: rgba(74,144,217,0.1);
+    border: 1px solid rgba(74,144,217,0.25);
+    border-radius: 100px;
+    padding: 8px 20px;
+    font-size: 13px;
+    color: var(--accent-light);
+    letter-spacing: 0.5px;
+    animation: fadeUp 0.9s ease 0.45s both;
+  }
+
+  .tagline {
+    margin-top: 28px;
+    font-size: 11px;
+    color: rgba(240,244,255,0.25);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    animation: fadeUp 0.9s ease 0.5s both;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="ornament">
+    <div class="ornament-line"></div>
+    <div class="ornament-diamond"></div>
+    <div class="ornament-line right"></div>
+  </div>
+
+  <div class="logo-area">
+    <img src="/static/logo.png" alt="Logo" onerror="this.style.display='none'; document.querySelector('.logo-placeholder').style.display='block'">
+    <div class="logo-placeholder">UnionBoard</div>
+  </div>
+
+  <h1 class="event-title">UnionBoard &amp; Show de Imagem</h1>
+  <p class="event-sub">Evento Undime · Aracaju / SE</p>
+
+  <div class="qr-card">
+    <span class="qr-label">Aponte a câmera para participar</span>
+    <div id="qrcode"></div>
+
+    <div class="instructions">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">Abra a <strong>câmera do celular</strong> ou um leitor de QR Code</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">Aponte para o código acima e <strong>toque no link</strong> que aparecer</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Preencha seu cadastro</strong> para participar do sorteio</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="url-pill">www.unionpost.com.br</div>
+
+  <p class="tagline">Participação gratuita · Sorteio ao vivo</p>
+
+</div>
+
+<script>
+  new QRCode(document.getElementById("qrcode"), {
+    text: "https://www.unionpost.com.br/sorteio-tela",
+    width: 220,
+    height: 220,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+</script>
+
+</body>
+</html>
